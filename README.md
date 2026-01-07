@@ -198,7 +198,7 @@ MySQL 연결 풀 동작을 더 세밀하게 제어하려면 추가 매개변수�
         "MYSQL_PASSWORD": "your-mysql-password",
         "MYSQL_DATABASE": "your-default-database",
         
-        "MYSQL_CONNECTION_LIMIT": "10",
+        "MYSQL_CONNECTION_LIMIT": "1",
         "MYSQL_QUEUE_LIMIT": "0",
         "MYSQL_CONNECT_TIMEOUT": "10000",
         "MYSQL_IDLE_TIMEOUT": "60000",
@@ -213,7 +213,7 @@ MySQL 연결 풀 동작을 더 세밀하게 제어하려면 추가 매개변수�
 
 이러한 고급 옵션을 통해 다음을 제어할 수 있습니다:
 
-- `MYSQL_CONNECTION_LIMIT`: 풀의 최대 연결 수 제어 (기본값: 10)
+- `MYSQL_CONNECTION_LIMIT`: 풀의 최대 연결 수 제어 (기본값: 1)
 - `MYSQL_QUEUE_LIMIT`: 대기열에 넣을 최대 연결 요청 수 설정 (기본값: 0, 무제한)
 - `MYSQL_CONNECT_TIMEOUT`: 연결 타임아웃을 밀리초 단위로 조정 (기본값: 10000)
 - `MYSQL_IDLE_TIMEOUT`: 연결이 해제되기 전까지 유휴 상태로 있을 수 있는 시간 (밀리초 단위)

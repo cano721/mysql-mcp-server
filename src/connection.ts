@@ -8,7 +8,7 @@ import { MySQLConfig } from './types.js';
 // Default connection pool configuration
 const DEFAULT_PORT = 3306;           // Default MySQL port
 const DEFAULT_TIMEOUT = 10000;       // Default connection timeout in milliseconds
-const DEFAULT_CONNECTION_LIMIT = 10; // Default maximum number of connections in the pool
+const DEFAULT_CONNECTION_LIMIT = 1;  // Default maximum number of connections in the pool
 const DEFAULT_QUEUE_LIMIT = 0;       // Default maximum number of connection requests to queue (0 = unlimited)
 const DEFAULT_ROW_LIMIT = 1000;      // Default row limit for query results
 

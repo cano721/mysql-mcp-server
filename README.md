@@ -293,6 +293,50 @@ Kiro IDE에서 이 MCP 서버를 사용하는 예제:
 }
 ```
 
+### IntelliJ Copilot에서 사용하기
+
+IntelliJ IDEA의 GitHub Copilot에서 MCP 서버를 사용하려면:
+
+```json
+{
+  "servers": {
+    "mysql": {
+      "command": "npx",
+      "args": ["@cano721/mysql-mcp-server"],
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "4307",
+        "MYSQL_USER": "developer"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+### Cursor IDE에서 사용하기
+
+Cursor IDE에서 MCP 서버를 사용하려면 `.cursor/mcp.json` 파일을 생성하세요:
+
+```json
+{
+  "servers": [
+    {
+      "name": "mysql",
+      "type": "command",
+      "command": "npx",
+      "arguments": ["@cano721/mysql-mcp-server"],
+      "environment": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "4307",
+        "MYSQL_USER": "developer"
+      }
+    }
+  ]
+}
+```
+
 ### 테스트 결과
 
 이 MCP 서버는 다음과 같은 실제 환경에서 테스트되었습니다:

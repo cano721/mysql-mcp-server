@@ -18,9 +18,18 @@
 
 ## 설치
 
-### 1. 다음 방법 중 하나로 설치:
+### 방법 1: npx 사용 (권장 - 설치 불필요)
 
-#### NPM에서 설치
+`npx`를 사용하면 별도 설치 없이 바로 사용할 수 있습니다:
+
+```bash
+# 설치 없이 바로 사용 가능
+npx @cano721/mysql-mcp-server
+```
+
+### 방법 2: 전역 설치
+
+자주 사용하거나 오프라인에서 사용하려면 전역 설치:
 
 ```bash
 # 전역 설치
@@ -30,7 +39,9 @@ npm install -g @cano721/mysql-mcp-server
 npm install @cano721/mysql-mcp-server
 ```
 
-#### 소스에서 빌드
+### 방법 3: 소스에서 빌드
+
+개발이나 커스터마이징이 필요한 경우:
 
 ```bash
 # 저장소 복제
@@ -42,7 +53,7 @@ npm install
 npm run build
 ```
 
-#### Smithery를 통한 설치
+### 방법 4: Smithery를 통한 설치
 
 Claude AI용 MySQL 데이터베이스 접근 MCP 서버를 Smithery를 통해 자동으로 설치:
 
@@ -64,7 +75,7 @@ npx -y @smithery/cli install @cano721/mysql-mcp-server --client claude
 
 MCP 설정 파일에 다음 구성을 추가하세요:
 
-npm으로 설치한 경우 (옵션 1):
+npx 사용 시 (권장):
 ```json
 {
   "mcpServers": {
@@ -85,7 +96,7 @@ npm으로 설치한 경우 (옵션 1):
 }
 ```
 
-소스에서 빌드한 경우 (옵션 2):
+소스에서 빌드한 경우:
 ```json
 {
   "mcpServers": {

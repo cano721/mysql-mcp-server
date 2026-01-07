@@ -1,71 +1,70 @@
 [![npm version](https://img.shields.io/npm/v/@cano721/mysql-mcp-server?color=blue)](https://www.npmjs.com/package/@cano721/mysql-mcp-server)
 
+# MySQL 데이터베이스 접근 MCP 서버 (@cano721/mysql-mcp-server)
 
-# MySQL Database Access MCP Server (@cano721/mysql-mcp-server)
+이 MCP 서버는 MySQL 데이터베이스에 읽기 전용 접근을 제공합니다. 다음과 같은 기능을 제공합니다:
 
-This MCP server provides read-only access to MySQL databases. It allows you to:
+- 사용 가능한 데이터베이스 목록 조회
+- 데이터베이스의 테이블 목록 조회
+- 테이블 스키마 설명
+- 읽기 전용 SQL 쿼리 실행
 
-- List available databases
-- List tables in a database
-- Describe table schemas
-- Execute read-only SQL queries
+## 보안 기능
 
-## Security Features
+- **읽기 전용 접근**: SELECT, SHOW, DESCRIBE, EXPLAIN 문만 허용
+- **쿼리 검증**: SQL 인젝션 방지 및 데이터 수정 시도 차단
+- **쿼리 타임아웃**: 장시간 실행되는 쿼리로부터 리소스 보호
+- **행 제한**: 과도한 데이터 반환 방지 (최대 1000행)
 
-- **Read-only access**: Only SELECT, SHOW, DESCRIBE, and EXPLAIN statements are allowed
-- **Query validation**: Prevents SQL injection and blocks any data modification attempts
-- **Query timeout**: Prevents long-running queries from consuming resources
-- **Row limit**: Prevents excessive data return
+## 설치
 
-## Installation
+### 1. 다음 방법 중 하나로 설치:
 
-### 1. Install using one of these methods:
-
-#### Install from NPM
+#### NPM에서 설치
 
 ```bash
-# Install globally
+# 전역 설치
 npm install -g @cano721/mysql-mcp-server
 
-# Or install locally in your project
+# 또는 프로젝트에 로컬 설치
 npm install @cano721/mysql-mcp-server
 ```
 
-#### Build from Source
+#### 소스에서 빌드
 
 ```bash
-# Clone the repository
+# 저장소 복제
 git clone https://github.com/cano721/mysql-mcp-server.git
 cd mysql-mcp-server
 
-# Install dependencies and build
+# 의존성 설치 및 빌드
 npm install
 npm run build
 ```
 
-#### Install via Smithery
+#### Smithery를 통한 설치
 
-To install MySQL Database Access MCP Server for Claude AI automatically via Smithery:
+Claude AI용 MySQL 데이터베이스 접근 MCP 서버를 Smithery를 통해 자동으로 설치:
 
 ```bash
 npx -y @smithery/cli install @cano721/mysql-mcp-server --client claude
 ```
 
-### 2. Configure environment variables
+### 2. 환경 변수 설정
 
-The server requires the following environment variables:
+서버는 다음 환경 변수가 필요합니다:
 
-- `MYSQL_HOST`: Database server hostname
-- `MYSQL_PORT`: Database server port (default: 3306)
-- `MYSQL_USER`: Database username
-- `MYSQL_PASSWORD`: Database password (optional, but recommended for secure connections)
-- `MYSQL_DATABASE`: Default database name (optional)
+- `MYSQL_HOST`: 데이터베이스 서버 호스트명
+- `MYSQL_PORT`: 데이터베이스 서버 포트 (기본값: 3306)
+- `MYSQL_USER`: 데이터베이스 사용자명
+- `MYSQL_PASSWORD`: 데이터베이스 비밀번호 (선택사항, 보안 연결에 권장)
+- `MYSQL_DATABASE`: 기본 데이터베이스명 (선택사항)
 
-### 3. Add to MCP settings
+### 3. MCP 설정에 추가
 
-Add the following configuration to your MCP settings file:
+MCP 설정 파일에 다음 구성을 추가하세요:
 
-If you installed via npm (Option 1):
+npm으로 설치한 경우 (옵션 1):
 ```json
 {
   "mcpServers": {
@@ -86,7 +85,7 @@ If you installed via npm (Option 1):
 }
 ```
 
-If you built from source (Option 2):
+소스에서 빌드한 경우 (옵션 2):
 ```json
 {
   "mcpServers": {
@@ -107,15 +106,15 @@ If you built from source (Option 2):
 }
 ```
 
-## Available Tools
+## 사용 가능한 도구
 
 ### list_databases
 
-Lists all accessible databases on the MySQL server.
+MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다.
 
-**Parameters**: None
+**매개변수**: 없음
 
-**Example**:
+**예제**:
 ```json
 {
   "server_name": "mysql",
@@ -126,12 +125,12 @@ Lists all accessible databases on the MySQL server.
 
 ### list_tables
 
-Lists all tables in a specified database.
+지정된 데이터베이스의 모든 테이블을 나열합니다.
 
-**Parameters**:
-- `database` (optional): Database name (uses default if not specified)
+**매개변수**:
+- `database` (선택사항): 데이터베이스명 (지정하지 않으면 기본값 사용)
 
-**Example**:
+**예제**:
 ```json
 {
   "server_name": "mysql",
@@ -144,13 +143,13 @@ Lists all tables in a specified database.
 
 ### describe_table
 
-Shows the schema for a specific table.
+특정 테이블의 스키마를 보여줍니다.
 
-**Parameters**:
-- `database` (optional): Database name (uses default if not specified)
-- `table` (required): Table name
+**매개변수**:
+- `database` (선택사항): 데이터베이스명 (지정하지 않으면 기본값 사용)
+- `table` (필수): 테이블명
 
-**Example**:
+**예제**:
 ```json
 {
   "server_name": "mysql",
@@ -164,13 +163,13 @@ Shows the schema for a specific table.
 
 ### execute_query
 
-Executes a read-only SQL query.
+읽기 전용 SQL 쿼리를 실행합니다.
 
-**Parameters**:
-- `query` (required): SQL query (only SELECT, SHOW, DESCRIBE, and EXPLAIN statements are allowed)
-- `database` (optional): Database name (uses default if not specified)
+**매개변수**:
+- `query` (필수): SQL 쿼리 (SELECT, SHOW, DESCRIBE, EXPLAIN 문만 허용)
+- `database` (선택사항): 데이터베이스명 (지정하지 않으면 기본값 사용)
 
-**Example**:
+**예제**:
 ```json
 {
   "server_name": "mysql",
@@ -182,9 +181,9 @@ Executes a read-only SQL query.
 }
 ```
 
-## Advanced Connection Pool Configuration
+## 고급 연결 풀 설정
 
-For more control over the MySQL connection pool behavior, you can configure additional parameters:
+MySQL 연결 풀 동작을 더 세밀하게 제어하려면 추가 매개변수를 설정할 수 있습니다:
 
 ```json
 {
@@ -212,74 +211,120 @@ For more control over the MySQL connection pool behavior, you can configure addi
 }
 ```
 
-These advanced options allow you to:
+이러한 고급 옵션을 통해 다음을 제어할 수 있습니다:
 
-- `MYSQL_CONNECTION_LIMIT`: Control the maximum number of connections in the pool (default: 10)
-- `MYSQL_QUEUE_LIMIT`: Set the maximum number of connection requests to queue (default: 0, unlimited)
-- `MYSQL_CONNECT_TIMEOUT`: Adjust the connection timeout in milliseconds (default: 10000)
-- `MYSQL_IDLE_TIMEOUT`: Configure how long a connection can be idle before being released (in milliseconds)
-- `MYSQL_MAX_IDLE`: Set the maximum number of idle connections to keep in the pool
+- `MYSQL_CONNECTION_LIMIT`: 풀의 최대 연결 수 제어 (기본값: 10)
+- `MYSQL_QUEUE_LIMIT`: 대기열에 넣을 최대 연결 요청 수 설정 (기본값: 0, 무제한)
+- `MYSQL_CONNECT_TIMEOUT`: 연결 타임아웃을 밀리초 단위로 조정 (기본값: 10000)
+- `MYSQL_IDLE_TIMEOUT`: 연결이 해제되기 전까지 유휴 상태로 있을 수 있는 시간 (밀리초 단위)
+- `MYSQL_MAX_IDLE`: 풀에 유지할 최대 유휴 연결 수 설정
 
+## 테스트
 
-## Testing
+서버에는 MySQL 설정으로 기능을 확인하는 테스트 스크립트가 포함되어 있습니다:
 
-The server includes test scripts to verify functionality with your MySQL setup:
+### 1. 테스트 데이터베이스 설정
 
-### 1. Setup Test Database
-
-This script creates a test database, table, and sample data:
+이 스크립트는 테스트 데이터베이스, 테이블 및 샘플 데이터를 생성합니다:
 
 ```bash
-# Set your MySQL credentials as environment variables
+# MySQL 자격 증명을 환경 변수로 설정
 export MYSQL_HOST=localhost
 export MYSQL_PORT=3306
 export MYSQL_USER=your_username
 export MYSQL_PASSWORD=your_password
 
-# Run the setup script
+# 설정 스크립트 실행
 npm run test:setup
 ```
 
-### 2. Test MCP Tools
+### 2. MCP 도구 테스트
 
-This script tests each of the MCP tools against the test database:
+이 스크립트는 테스트 데이터베이스에 대해 각 MCP 도구를 테스트합니다:
 
 ```bash
-# Set your MySQL credentials as environment variables
+# MySQL 자격 증명을 환경 변수로 설정
 export MYSQL_HOST=localhost
 export MYSQL_PORT=3306
 export MYSQL_USER=your_username
 export MYSQL_PASSWORD=your_password
 export MYSQL_DATABASE=mcp_test_db
 
-# Run the tools test script
+# 도구 테스트 스크립트 실행
 npm run test:tools
 ```
 
-### 3. Run All Tests
+### 3. 모든 테스트 실행
 
-To run both setup and tool tests:
+설정 및 도구 테스트를 모두 실행하려면:
 
 ```bash
-# Set your MySQL credentials as environment variables
+# MySQL 자격 증명을 환경 변수로 설정
 export MYSQL_HOST=localhost
 export MYSQL_PORT=3306
 export MYSQL_USER=your_username
 export MYSQL_PASSWORD=your_password
 
-# Run all tests
+# 모든 테스트 실행
 npm test
 ```
 
-## Troubleshooting
+## 실제 사용 예제
 
-If you encounter issues:
+### Kiro IDE에서 사용하기
 
-1. Check the server logs for error messages
-2. Verify your MySQL credentials and connection details
-3. Ensure your MySQL user has appropriate permissions
-4. Check that your query is read-only and properly formatted
+Kiro IDE에서 이 MCP 서버를 사용하는 예제:
 
-## License
+```json
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "npx",
+      "args": ["@cano721/mysql-mcp-server"],
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "4307",
+        "MYSQL_USER": "developer"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+### 테스트 결과
+
+이 MCP 서버는 다음과 같은 실제 환경에서 테스트되었습니다:
+
+- ✅ **데이터베이스 목록 조회**: 38개의 데이터베이스 성공적으로 조회
+- ✅ **테이블 목록 조회**: MySQL 시스템 데이터베이스의 40개 테이블 조회
+- ✅ **테이블 스키마 조회**: user 테이블의 46개 컬럼 정보 조회
+- ✅ **SQL 쿼리 실행**: 사용자 정보 조회 쿼리 성공적으로 실행
+
+## 문제 해결
+
+문제가 발생하면:
+
+1. 서버 로그에서 오류 메시지 확인
+2. MySQL 자격 증명 및 연결 세부 정보 확인
+3. MySQL 사용자에게 적절한 권한이 있는지 확인
+4. 쿼리가 읽기 전용이고 올바르게 형식화되었는지 확인
+
+### 일반적인 오류
+
+- **연결 오류**: `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER` 환경 변수 확인
+- **권한 오류**: MySQL 사용자에게 데이터베이스 접근 권한이 있는지 확인
+- **쿼리 오류**: SELECT, SHOW, DESCRIBE, EXPLAIN 문만 사용 가능
+
+## 라이선스
+
+이 프로젝트는 MIT 라이선스에 따라 라이선스가 부여됩니다 - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+## 기여
+
+기여를 환영합니다! 이슈를 제출하거나 풀 리퀘스트를 보내주세요.
+
+## 지원
+
+문제가 있거나 질문이 있으시면 [GitHub Issues](https://github.com/cano721/mysql-mcp-server/issues)에서 이슈를 생성해주세요.

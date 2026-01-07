@@ -1,8 +1,4 @@
-<a href="https://glama.ai/mcp/servers/@dpflucas/mysql-mcp-server">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@dpflucas/mysql-mcp-server/badge" alt="mysql-mcp-server MCP server" />
-</a>
-
-[![npm version](https://img.shields.io/npm/v/mysql-mcp-server?color=blue)](https://www.npmjs.com/package/mysql-mcp-server) [![smithery badge](https://smithery.ai/badge/@dpflucas/mysql-mcp-server)](https://smithery.ai/server/@dpflucas/mysql-mcp-server)
+[![npm version](https://img.shields.io/npm/v/mysql-mcp-server?color=blue)](https://www.npmjs.com/package/mysql-mcp-server)
 
 
 # MySQL Database Access MCP Server
@@ -39,7 +35,7 @@ npm install mysql-mcp-server
 
 ```bash
 # Clone the repository
-git clone https://github.com/dpflucas/mysql-mcp-server.git
+git clone https://github.com/cano721/mysql-mcp-server.git
 cd mysql-mcp-server
 
 # Install dependencies and build
@@ -49,10 +45,10 @@ npm run build
 
 #### Install via Smithery
 
-To install MySQL Database Access MCP Server for Claude AI automatically via [Smithery](https://smithery.ai/server/@dpflucas/mysql-mcp-server):
+To install MySQL Database Access MCP Server for Claude AI automatically via Smithery:
 
 ```bash
-npx -y @smithery/cli install @dpflucas/mysql-mcp-server --client claude
+npx -y @smithery/cli install mysql-mcp-server --client claude
 ```
 
 ### 2. Configure environment variables

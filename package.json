@@ -28,9 +28,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dpflucas/mysql-mcp-server.git"
+    "url": "git+https://github.com/cano721/mysql-mcp-server.git"
   },
-  "author": "Diogo Lucas <dpflucas@gmail.com>",
+  "author": "cano721",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "0.6.0",

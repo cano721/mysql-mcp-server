@@ -32,6 +32,9 @@
   },
   "author": "cano721",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "0.6.0",
     "mysql2": "^3.12.0"

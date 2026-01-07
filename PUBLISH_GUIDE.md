@@ -1,4 +1,4 @@
-# Publishing Guide for mysql-mcp-server
+# Publishing Guide for @cano721/mysql-mcp-server
 
 This guide explains how to publish the MySQL MCP Server to npm.
 
@@ -45,17 +45,17 @@ This guide explains how to publish the MySQL MCP Server to npm.
 
 1. **Verify**: Check that your package is available on npm:
    ```bash
-   npm view mysql-mcp-server
+   npm view @cano721/mysql-mcp-server
    ```
 
 2. **Test Installation**: Test installing your package:
    ```bash
-   npm install -g mysql-mcp-server
+   npm install -g @cano721/mysql-mcp-server
    ```
 
 ## Package Information
 
-- **Name**: mysql-mcp-server
+- **Name**: @cano721/mysql-mcp-server
 - **Repository**: https://github.com/cano721/mysql-mcp-server
 - **Author**: cano721
 - **License**: MIT
@@ -74,10 +74,10 @@ Users can install and use your package with:
 
 ```bash
 # Global installation
-npm install -g mysql-mcp-server
+npm install -g @cano721/mysql-mcp-server
 
 # Local installation
-npm install mysql-mcp-server
+npm install @cano721/mysql-mcp-server
 ```
 
 ## MCP Configuration
@@ -89,7 +89,7 @@ Users can configure the MCP server in their Claude Desktop settings:
   "mcpServers": {
     "mysql": {
       "command": "npx",
-      "args": ["mysql-mcp-server"],
+      "args": ["@cano721/mysql-mcp-server"],
       "env": {
         "MYSQL_HOST": "localhost",
         "MYSQL_PORT": "3306",

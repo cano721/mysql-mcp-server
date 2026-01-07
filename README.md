@@ -1,7 +1,7 @@
-[![npm version](https://img.shields.io/npm/v/mysql-mcp-server?color=blue)](https://www.npmjs.com/package/mysql-mcp-server)
+[![npm version](https://img.shields.io/npm/v/@cano721/mysql-mcp-server?color=blue)](https://www.npmjs.com/package/@cano721/mysql-mcp-server)
 
 
-# MySQL Database Access MCP Server
+# MySQL Database Access MCP Server (@cano721/mysql-mcp-server)
 
 This MCP server provides read-only access to MySQL databases. It allows you to:
 
@@ -25,10 +25,10 @@ This MCP server provides read-only access to MySQL databases. It allows you to:
 
 ```bash
 # Install globally
-npm install -g mysql-mcp-server
+npm install -g @cano721/mysql-mcp-server
 
 # Or install locally in your project
-npm install mysql-mcp-server
+npm install @cano721/mysql-mcp-server
 ```
 
 #### Build from Source
@@ -48,7 +48,7 @@ npm run build
 To install MySQL Database Access MCP Server for Claude AI automatically via Smithery:
 
 ```bash
-npx -y @smithery/cli install mysql-mcp-server --client claude
+npx -y @smithery/cli install @cano721/mysql-mcp-server --client claude
 ```
 
 ### 2. Configure environment variables
@@ -71,7 +71,7 @@ If you installed via npm (Option 1):
   "mcpServers": {
     "mysql": {
       "command": "npx",
-      "args": ["mysql-mcp-server"],
+      "args": ["@cano721/mysql-mcp-server"],
       "env": {
         "MYSQL_HOST": "your-mysql-host",
         "MYSQL_PORT": "3306",
@@ -191,7 +191,7 @@ For more control over the MySQL connection pool behavior, you can configure addi
   "mcpServers": {
     "mysql": {
       "command": "npx",
-      "args": ["mysql-mcp-server"],
+      "args": ["@cano721/mysql-mcp-server"],
       "env": {
         "MYSQL_HOST": "your-mysql-host",
         "MYSQL_PORT": "3306",

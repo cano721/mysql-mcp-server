@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "mysql": {
-      "command": "node",
-      "args": ["/absolute/path/to/mysql-mcp-server/build/index.js"],
+      "command": "npx",
+      "args": ["@cano721/mysql-mcp-server"],
       "env": {
         "MYSQL_HOST": "localhost",
         "MYSQL_PORT": "3306",

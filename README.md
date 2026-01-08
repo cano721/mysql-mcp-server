@@ -429,15 +429,56 @@ node --version
 
 # npm 버전 확인
 npm --version
-
-# Node.js 업데이트가 필요한 경우:
-# https://nodejs.org/ 에서 최신 LTS 버전 다운로드
 ```
 
 **Node.js 18 미만이면 다음 오류가 발생할 수 있습니다:**
 - ES modules 지원 문제
 - 최신 JavaScript 기능 미지원
 - 의존성 패키지 호환성 문제
+
+**Node.js 업데이트 방법:**
+
+##### 방법 1: 공식 웹사이트에서 다운로드 (권장)
+1. https://nodejs.org/ 방문
+2. **LTS 버전** (Long Term Support) 다운로드
+3. 설치 프로그램 실행
+4. 터미널 재시작 후 버전 확인: `node --version`
+
+##### 방법 2: nvm 사용 (개발자 권장)
+```bash
+# nvm 설치 (macOS/Linux)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# 터미널 재시작 후
+nvm install --lts        # 최신 LTS 버전 설치
+nvm use --lts           # LTS 버전 사용
+nvm alias default lts/* # 기본값으로 설정
+```
+
+##### 방법 3: Homebrew 사용 (macOS)
+```bash
+# Homebrew로 Node.js 업데이트
+brew install node
+
+# 또는 기존 설치가 있다면
+brew upgrade node
+```
+
+##### 방법 4: 패키지 매니저 사용 (Linux)
+```bash
+# Ubuntu/Debian
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# CentOS/RHEL/Fedora
+curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo bash -
+sudo yum install -y nodejs
+```
+
+##### 방법 5: Windows
+1. https://nodejs.org/ 에서 Windows Installer 다운로드
+2. 또는 Chocolatey 사용: `choco install nodejs`
+3. 또는 Scoop 사용: `scoop install nodejs`
 
 #### 1. npx 캐시 문제
 ```bash

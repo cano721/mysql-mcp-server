@@ -18,7 +18,7 @@
 
 ## 설치
 
-### 방법 1: npx 사용 (권장 - 설치 불필요)
+### 방법 1: npx 사용 (대부분의 MCP 클라이언트에서 권장)
 
 `npx`를 사용하면 별도 설치 없이 바로 사용할 수 있습니다:
 
@@ -27,16 +27,18 @@
 npx @cano721/mysql-mcp-server
 ```
 
-### 방법 2: 전역 설치
+**주의**: 일부 MCP 클라이언트에서 npx가 제대로 작동하지 않을 수 있습니다. 그런 경우 방법 2를 사용하세요.
 
-자주 사용하거나 오프라인에서 사용하려면 전역 설치:
+### 방법 2: 전역 설치 (npx가 안 될 때 권장)
+
+npx에 문제가 있거나 더 안정적인 연결을 원한다면:
 
 ```bash
 # 전역 설치
 npm install -g @cano721/mysql-mcp-server
 
-# 또는 프로젝트에 로컬 설치
-npm install @cano721/mysql-mcp-server
+# 설치 확인
+mysql-mcp-server --version
 ```
 
 ### 방법 3: 소스에서 빌드
@@ -75,7 +77,7 @@ npx -y @smithery/cli install @cano721/mysql-mcp-server --client claude
 
 MCP 설정 파일에 다음 구성을 추가하세요:
 
-npx 사용 시 (권장):
+#### npx 사용 시:
 ```json
 {
   "mcpServers": {
@@ -96,7 +98,28 @@ npx 사용 시 (권장):
 }
 ```
 
-소스에서 빌드한 경우:
+#### 전역 설치 후 사용 시:
+```json
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "mysql-mcp-server",
+      "args": [],
+      "env": {
+        "MYSQL_HOST": "your-mysql-host",
+        "MYSQL_PORT": "3306",
+        "MYSQL_USER": "your-mysql-user",
+        "MYSQL_PASSWORD": "your-mysql-password",
+        "MYSQL_DATABASE": "your-default-database"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+#### 소스에서 빌드한 경우:
 ```json
 {
   "mcpServers": {
@@ -308,12 +331,32 @@ Kiro IDE에서 이 MCP 서버를 사용하는 예제:
 
 IntelliJ IDEA의 GitHub Copilot에서 MCP 서버를 사용하려면:
 
+#### npx 사용 시:
 ```json
 {
   "servers": {
     "mysql": {
       "command": "npx",
       "args": ["@cano721/mysql-mcp-server"],
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "4307",
+        "MYSQL_USER": "developer"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+#### 전역 설치 후 사용 시:
+```json
+{
+  "servers": {
+    "mysql": {
+      "command": "mysql-mcp-server",
+      "args": [],
       "env": {
         "MYSQL_HOST": "localhost",
         "MYSQL_PORT": "4307",

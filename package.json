@@ -1,6 +1,6 @@
 {
   "name": "@cano721/mysql-mcp-server",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "An MCP server that provides read-only access to MySQL databases.",
   "type": "module",
   "bin": {

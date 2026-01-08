@@ -480,6 +480,32 @@ sudo yum install -y nodejs
 2. 또는 Chocolatey 사용: `choco install nodejs`
 3. 또는 Scoop 사용: `scoop install nodejs`
 
+**Node.js 업데이트 후 설정:**
+```bash
+# 1. 터미널/명령 프롬프트 재시작 (중요!)
+
+# 2. 버전 확인
+node --version  # v18.0.0 이상인지 확인
+npm --version   # 8.0.0 이상인지 확인
+
+# 3. npm 캐시 클리어 (권장)
+npm cache clean --force
+
+# 4. MCP 서버 테스트
+npx @cano721/mysql-mcp-server@latest
+
+# 5. 환경 변수 설정 후 테스트
+export MYSQL_HOST=localhost
+export MYSQL_PORT=4307
+export MYSQL_USER=developer
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx @cano721/mysql-mcp-server
+```
+
+**주의사항:**
+- Node.js 업데이트 후 **반드시 터미널을 재시작**하세요
+- IDE(IntelliJ, VSCode 등)도 재시작해야 새 Node.js 버전을 인식합니다
+- 기존에 전역 설치한 패키지들은 재설치가 필요할 수 있습니다
+
 #### 1. npx 캐시 문제
 ```bash
 # 최신 버전 강제 사용

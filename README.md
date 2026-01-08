@@ -372,6 +372,80 @@ Cursor IDE에서 MCP 서버를 사용하려면 `.cursor/mcp.json` 파일을 생�
 - **권한 오류**: MySQL 사용자에게 데이터베이스 접근 권한이 있는지 확인
 - **쿼리 오류**: SELECT, SHOW, DESCRIBE, EXPLAIN 문만 사용 가능
 
+### npx 관련 문제
+
+#### 1. npx 캐시 문제
+```bash
+# 최신 버전 강제 사용
+npx --yes @cano721/mysql-mcp-server@latest
+
+# npm 캐시 클리어
+npm cache clean --force
+```
+
+#### 2. 환경 변수 전달 문제
+MCP 설정에서 환경 변수가 제대로 설정되었는지 확인:
+```json
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "npx",
+      "args": ["@cano721/mysql-mcp-server"],
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "4307",
+        "MYSQL_USER": "developer"
+      }
+    }
+  }
+}
+```
+
+#### 3. Node.js PATH 문제
+```bash
+# Node.js 경로 확인
+which node
+which npx
+
+# PATH에 Node.js 추가 (필요시)
+export PATH="/path/to/node/bin:$PATH"
+```
+
+#### 4. 대안: 전역 설치 사용
+npx가 계속 문제가 되면 전역 설치 후 직접 실행:
+```bash
+npm install -g @cano721/mysql-mcp-server
+```
+
+그 후 MCP 설정에서:
+```json
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "mysql-mcp-server",
+      "args": [],
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "4307",
+        "MYSQL_USER": "developer"
+      }
+    }
+  }
+}
+```
+
+#### 5. 연결 테스트
+터미널에서 직접 테스트:
+```bash
+# 환경 변수 설정 후 테스트
+export MYSQL_HOST=localhost
+export MYSQL_PORT=4307
+export MYSQL_USER=developer
+
+# MCP 서버 테스트
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx @cano721/mysql-mcp-server
+```
+
 ## 라이선스
 
 이 프로젝트는 MIT 라이선스에 따라 라이선스가 부여됩니다 - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.

@@ -27,6 +27,12 @@
 - **쿼리 타임아웃**: 장시간 실행되는 쿼리로부터 리소스 보호
 - **행 제한**: 과도한 데이터 반환 방지 (최대 1000행)
 
+**지원되는 SQL 명령어**:
+- `SELECT` - 데이터 조회 및 분석
+- `SHOW` - 데이터베이스/테이블/인덱스 정보 조회
+- `DESCRIBE` / `DESC` - 테이블 구조 및 컬럼 정보
+- `EXPLAIN` - 쿼리 실행 계획 및 성능 분석
+
 ## 요구사항
 
 - **Node.js**: 18.0.0 이상 → [Node.js 업데이트 방법](#0-nodejs-버전-확인-가장-중요)
@@ -221,6 +227,12 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 - `query` (필수): SQL 쿼리 (SELECT, SHOW, DESCRIBE, EXPLAIN 문만 허용)
 - `database` (선택사항): 데이터베이스명 (지정하지 않으면 기본값 사용)
 
+**지원되는 쿼리 유형**:
+- `SELECT` - 데이터 조회
+- `SHOW` - 데이터베이스/테이블 정보 표시
+- `DESCRIBE` / `DESC` - 테이블 구조 설명
+- `EXPLAIN` - 쿼리 실행 계획 분석
+
 **예제**:
 ```json
 {
@@ -229,6 +241,30 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
   "arguments": {
     "database": "my_database",
     "query": "SELECT * FROM my_table LIMIT 10"
+  }
+}
+```
+
+**EXPLAIN 사용 예제**:
+```json
+{
+  "server_name": "mysql",
+  "tool_name": "execute_query",
+  "arguments": {
+    "database": "my_database",
+    "query": "EXPLAIN SELECT * FROM my_table WHERE id = 1"
+  }
+}
+```
+
+**SHOW 명령어 예제**:
+```json
+{
+  "server_name": "mysql",
+  "tool_name": "execute_query",
+  "arguments": {
+    "database": "my_database",
+    "query": "SHOW CREATE TABLE my_table"
   }
 }
 ```
@@ -417,6 +453,8 @@ Cursor IDE에서 MCP 서버를 사용하려면 `.cursor/mcp.json` 파일을 생�
 - ✅ **테이블 목록 조회**: MySQL 시스템 데이터베이스의 40개 테이블 조회
 - ✅ **테이블 스키마 조회**: user 테이블의 46개 컬럼 정보 조회
 - ✅ **SQL 쿼리 실행**: 사용자 정보 조회 쿼리 성공적으로 실행
+- ✅ **EXPLAIN 쿼리**: 쿼리 실행 계획 분석 지원
+- ✅ **SHOW 명령어**: 데이터베이스 메타데이터 조회 지원
 
 ## 문제 해결
 

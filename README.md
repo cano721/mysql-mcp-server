@@ -336,11 +336,9 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 - `table` (필수): 연관 테이블을 찾을 기준 테이블명
 - `database` (선택사항): 데이터베이스명
 - `depth` (선택사항): 탐색할 최대 깊이 (기본값: 3, 10 초과 시 경고)
-- `include_pattern_match` (선택사항): 컬럼명 패턴 매칭 포함 여부 (기본값: false)
 
 **검색 방법**:
-1. **FK 제약조건 기반** (기본): 실제 Foreign Key가 설정된 테이블만 조회
-2. **패턴 매칭 포함**: `user_sn`, `user_id` 같은 컬럼명 패턴으로 추가 테이블 탐색
+- **FK 제약조건 기반**: 실제 Foreign Key가 설정된 테이블만 조회
 
 **예제**:
 ```json
@@ -355,29 +353,13 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 }
 ```
 
-**패턴 매칭 포함 예제**:
-```json
-{
-  "server_name": "mysql",
-  "tool_name": "get_related_tables",
-  "arguments": {
-    "database": "my_database",
-    "table": "user",
-    "depth": 2,
-    "include_pattern_match": true
-  }
-}
-```
-
 **응답 예시**:
 ```json
 {
   "root_table": "user",
   "database": "my_database",
   "requested_depth": 2,
-  "search_method": "fk_constraint",
   "fk_relations_count": 55,
-  "pattern_match_count": 0,
   "total_relations": 55,
   "circular_references_detected": false,
   "fk_relations": [
@@ -386,11 +368,9 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
       "child_table": "user_matching_information",
       "fk_column": "user_sn",
       "parent_table": "user",
-      "constraint_name": "FK_USER_MATCHING_INFORMATION_USER_SN",
-      "match_type": "fk_constraint"
+      "constraint_name": "FK_USER_MATCHING_INFORMATION_USER_SN"
     }
-  ],
-  "note": "FK 제약조건 기반으로 조회되었습니다. 패턴 매칭도 포함하려면 '패턴 매칭도 포함해줘'라고 요청해보세요."
+  ]
 }
 ```
 
@@ -811,6 +791,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx @cano721/mysql-mcp-s
 
 | 버전 | 날짜 | 주요 변경 사항 |
 |------|------|---------------|
+| 0.10.0 | 2025-01-09 | `get_related_tables` 패턴 매칭 제거, FK 제약조건만 사용 |
 | 0.9.5 | 2025-01-09 | 쿼리 타임아웃 설정 가능 (`MYSQL_QUERY_TIMEOUT`, 기본값 60초) |
 | 0.9.4 | 2025-01-09 | `get_related_tables` 성능 최적화 (O(n) → O(1) 쿼리, 타임아웃 해결) |
 | 0.9.3 | 2025-01-09 | 모든 도구 description에 한글 키워드 추가 (한글 질문 인식 개선) |

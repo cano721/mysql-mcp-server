@@ -166,10 +166,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           depth: {
             type: "number",
             description: "Maximum depth to traverse relationships (default: 3, warning if > 10)"
-          },
-          include_pattern_match: {
-            type: "boolean",
-            description: "Include tables found by column name pattern matching (e.g., user_sn, user_id). Default: false"
           }
         },
         required: ["table"]
@@ -385,7 +381,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const table = request.params.arguments?.table as string;
         const database = request.params.arguments?.database as string | undefined;
         const requestedDepth = request.params.arguments?.depth as number || 3;
-        const includePatternMatch = request.params.arguments?.include_pattern_match as boolean || false;
         
         if (!table) {
           throw new McpError(ErrorCode.InvalidParams, "Table name is required");
@@ -413,7 +408,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           child_table: string;
           fk_column: string;
           parent_table: string;
-          match_type: 'fk_constraint' | 'pattern_match';
+          constraint_name: string;
         }
 
         interface CircularReference {
@@ -427,7 +422,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           SELECT 
             TABLE_NAME as child_table,
             COLUMN_NAME as fk_column,
-            REFERENCED_TABLE_NAME as parent_table
+            REFERENCED_TABLE_NAME as parent_table,
+            CONSTRAINT_NAME as constraint_name
           FROM information_schema.KEY_COLUMN_USAGE
           WHERE TABLE_SCHEMA = ?
             AND REFERENCED_TABLE_NAME IS NOT NULL
@@ -436,14 +432,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const { rows: allFKRows } = await executeQueryWithTimeout(allFKQuery, [dbName]);
         
         // FK 관계를 Map으로 구성 (빠른 조회를 위해)
-        const childToParents = new Map<string, Array<{child: string, fk_column: string, parent: string}>>();
-        const parentToChildren = new Map<string, Array<{child: string, fk_column: string, parent: string}>>();
+        const childToParents = new Map<string, Array<{child: string, fk_column: string, parent: string, constraint_name: string}>>();
+        const parentToChildren = new Map<string, Array<{child: string, fk_column: string, parent: string, constraint_name: string}>>();
         
         for (const row of allFKRows as any[]) {
           const relation = {
             child: row.child_table,
             fk_column: row.fk_column,
-            parent: row.parent_table
+            parent: row.parent_table,
+            constraint_name: row.constraint_name
           };
           
           // child -> parent 매핑
@@ -483,7 +480,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               child_table: relation.child,
               fk_column: relation.fk_column,
               parent_table: relation.parent,
-              match_type: 'fk_constraint'
+              constraint_name: relation.constraint_name
             });
 
             if (!visited.has(relation.child)) {
@@ -522,7 +519,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 child_table: relation.child,
                 fk_column: relation.fk_column,
                 parent_table: relation.parent,
-                match_type: 'fk_constraint'
+                constraint_name: relation.constraint_name
               });
             }
 
@@ -552,65 +549,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           return a.child_table.localeCompare(b.child_table);
         });
 
-        // Pattern matching for tables without FK constraints
-        let patternMatchResults: RelatedTable[] = [];
-        if (includePatternMatch) {
-          console.error('[Tool] Including pattern match results');
-          
-          // Common patterns: table_sn, table_id, table_code, sn_table, id_table
-          const patterns = [
-            `${table}_sn`, `${table}_id`, `${table}_code`,
-            `sn_${table}`, `id_${table}`,
-            `${table}sn`, `${table}id`
-          ];
-          
-          const patternQuery = `
-            SELECT DISTINCT
-              c.TABLE_NAME as related_table,
-              c.COLUMN_NAME as matching_column
-            FROM information_schema.COLUMNS c
-            WHERE c.TABLE_SCHEMA = ?
-              AND c.TABLE_NAME != ?
-              AND (${patterns.map(() => 'LOWER(c.COLUMN_NAME) = LOWER(?)').join(' OR ')})
-          `;
-          
-          const { rows: patternRows } = await executeQueryWithTimeout(
-            patternQuery,
-            [dbName, table, ...patterns]
-          );
-
-          // Filter out tables already found via FK
-          const fkTables = new Set(results.map(r => r.child_table));
-          fkTables.add(table);
-          
-          for (const row of patternRows as any[]) {
-            if (!fkTables.has(row.related_table)) {
-              patternMatchResults.push({
-                depth: 1,
-                child_table: row.related_table,
-                fk_column: row.matching_column,
-                parent_table: table,
-                match_type: 'pattern_match'
-              });
-            }
-          }
-        }
-
         const response: any = {
           root_table: table,
           database: dbName,
           requested_depth: requestedDepth,
-          search_method: includePatternMatch ? 'fk_constraint + pattern_match' : 'fk_constraint',
           fk_relations_count: results.length,
-          pattern_match_count: patternMatchResults.length,
-          total_relations: results.length + patternMatchResults.length,
+          total_relations: results.length,
           circular_references_detected: circularReferences.length > 0,
           circular_references: circularReferences.length > 0 ? circularReferences : undefined,
-          fk_relations: results,
-          pattern_match_relations: includePatternMatch ? patternMatchResults : undefined,
-          note: includePatternMatch 
-            ? "FK 제약조건 + 컬럼명 패턴 매칭 결과입니다." 
-            : "FK 제약조건 기반으로 조회되었습니다. 패턴 매칭도 포함하려면 '패턴 매칭도 포함해줘'라고 요청해보세요."
+          fk_relations: results
         };
 
         if (warning) {

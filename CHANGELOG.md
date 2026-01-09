@@ -2,6 +2,18 @@
 
 모든 주요 변경 사항이 이 파일에 기록됩니다.
 
+## [0.10.0] - 2025-01-09
+
+### Removed
+- `get_related_tables`에서 패턴 매칭 기능 제거
+- `include_pattern_match` 파라미터 제거
+- `pattern_match_relations`, `pattern_match_count`, `search_method`, `note` 필드 제거
+
+### Changed
+- FK 제약조건만 사용하도록 단순화
+- 응답 구조 간소화 및 일관성 개선
+- `constraint_name` 필드 추가 (FK 제약조건 이름)
+
 ## [0.9.5] - 2025-01-09
 
 ### Added

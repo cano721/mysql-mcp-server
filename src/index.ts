@@ -408,7 +408,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           child_table: string;
           fk_column: string;
           parent_table: string;
-          constraint_name: string;
           match_type: 'fk_constraint' | 'pattern_match';
         }
 
@@ -427,8 +426,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             SELECT 
               TABLE_NAME as child_table,
               COLUMN_NAME as fk_column,
-              REFERENCED_TABLE_NAME as parent_table,
-              CONSTRAINT_NAME as constraint_name
+              REFERENCED_TABLE_NAME as parent_table
             FROM information_schema.KEY_COLUMN_USAGE
             WHERE REFERENCED_TABLE_SCHEMA = ?
               AND REFERENCED_TABLE_NAME = ?
@@ -447,7 +445,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               child_table: row.child_table,
               fk_column: row.fk_column,
               parent_table: row.parent_table,
-              constraint_name: row.constraint_name,
               match_type: 'fk_constraint'
             });
 
@@ -462,8 +459,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             SELECT 
               TABLE_NAME as child_table,
               COLUMN_NAME as fk_column,
-              REFERENCED_TABLE_NAME as parent_table,
-              CONSTRAINT_NAME as constraint_name
+              REFERENCED_TABLE_NAME as parent_table
             FROM information_schema.KEY_COLUMN_USAGE
             WHERE TABLE_SCHEMA = ?
               AND TABLE_NAME = ?
@@ -490,7 +486,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 child_table: row.child_table,
                 fk_column: row.fk_column,
                 parent_table: row.parent_table,
-                constraint_name: row.constraint_name,
                 match_type: 'fk_constraint'
               });
             }
@@ -547,7 +542,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 child_table: row.related_table,
                 fk_column: row.matching_column,
                 parent_table: table,
-                constraint_name: '(pattern match)',
                 match_type: 'pattern_match'
               });
             }

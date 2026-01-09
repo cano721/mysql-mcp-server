@@ -18,6 +18,7 @@
 - [문제 해결](#문제-해결)
   - [Node.js 버전 확인 및 업데이트](#0-nodejs-버전-확인-가장-중요)
   - [npx 관련 문제](#npx-관련-문제)
+- [변경 이력](#변경-이력)
 - [라이선스](#라이선스)
 
 ## 보안 기능
@@ -717,6 +718,21 @@ export MYSQL_USER=developer
 # MCP 서버 테스트
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx @cano721/mysql-mcp-server
 ```
+
+## 변경 이력
+
+전체 변경 이력은 [CHANGELOG.md](CHANGELOG.md)를 참조하세요.
+
+### 최근 버전
+
+| 버전 | 날짜 | 주요 변경 사항 |
+|------|------|---------------|
+| 0.6.0 | 2025-01-09 | `analyze_table` → `analyze_query`로 변경, `@latest` 태그 문서 추가 |
+| 0.5.0 | 2025-01-09 | `explain_query`, `analyze_table` 전용 도구 추가 |
+| 0.4.0 | 2025-01-09 | EXPLAIN/ANALYZE 지원, 연결 풀 기본값 1로 변경 |
+| 0.3.0 | 2025-01-09 | Node.js 18+ 요구사항, 문제 해결 가이드 추가 |
+| 0.2.0 | 2025-01-09 | IntelliJ, Cursor, Kiro IDE 설정 예제 추가 |
+| 0.1.0 | 2025-01-09 | 초기 릴리스 |
 
 ## 라이선스
 

@@ -140,7 +140,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     },
     {
       name: "get_related_tables",
-      description: "Get all tables related to a specific table through foreign keys (parent and child relationships with depth). Results are based on FK constraints only. Set include_pattern_match=true to also find tables by column name patterns.",
+      description: "Find all related/connected/associated tables linked to a specific table through foreign keys. Discovers table relationships and dependencies with depth traversal. Use this when asked to find related tables, connected tables, associated tables, or table relationships.",
       inputSchema: {
         type: "object",
         properties: {

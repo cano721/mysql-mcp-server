@@ -54,8 +54,8 @@ function getAllowedCommands(): string[] {
     allowedCommands.push('EXPLAIN');
   }
   
-  // Check if ANALYZE is enabled (default: false)
-  const allowAnalyze = process.env.MYSQL_ALLOW_ANALYZE === 'true';
+  // Check if ANALYZE is enabled (default: true)
+  const allowAnalyze = process.env.MYSQL_ALLOW_ANALYZE !== 'false';
   if (allowAnalyze) {
     allowedCommands.push('ANALYZE');
   }

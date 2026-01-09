@@ -127,7 +127,7 @@ export function getConfigFromEnv(): MySQLConfig {
   
   // Security options
   const allowExplain = process.env.MYSQL_ALLOW_EXPLAIN !== 'false'; // Default: true
-  const allowAnalyze = process.env.MYSQL_ALLOW_ANALYZE === 'true';   // Default: false
+  const allowAnalyze = process.env.MYSQL_ALLOW_ANALYZE !== 'false';  // Default: true
   
   if (!host) throw new Error('MYSQL_HOST environment variable is required');
   if (!user) throw new Error('MYSQL_USER environment variable is required');

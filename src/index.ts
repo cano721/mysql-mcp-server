@@ -63,7 +63,7 @@ const server = new Server(
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   // Check if optional commands are enabled
   const allowExplain = process.env.MYSQL_ALLOW_EXPLAIN !== 'false';
-  const allowAnalyze = process.env.MYSQL_ALLOW_ANALYZE === 'true';
+  const allowAnalyze = process.env.MYSQL_ALLOW_ANALYZE !== 'false';
   
   // Build allowed commands description
   const allowedCommands = ['SELECT', 'SHOW', 'DESCRIBE'];

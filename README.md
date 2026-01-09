@@ -23,7 +23,7 @@
 ## 보안 기능
 
 - **읽기 전용 접근**: SELECT, SHOW, DESCRIBE 문 항상 허용
-- **선택적 분석 도구**: EXPLAIN, ANALYZE 선택적 허용
+- **분석 도구**: EXPLAIN, ANALYZE 기본 허용 (읽기 전용 분석)
 - **쿼리 검증**: SQL 인젝션 방지 및 데이터 수정 시도 차단
 - **쿼리 타임아웃**: 장시간 실행되는 쿼리로부터 리소스 보호
 - **행 제한**: 과도한 데이터 반환 방지 (최대 1000행)
@@ -33,8 +33,8 @@
 - `SELECT` - 데이터 조회 및 분석 (항상 허용)
 - `SHOW` - 데이터베이스/테이블/인덱스 정보 조회 (항상 허용)
 - `DESCRIBE` / `DESC` - 테이블 구조 및 컬럼 정보 (항상 허용)
-- `EXPLAIN` - 쿼리 실행 계획 및 성능 분석 (선택적 허용, 기본값: 허용)
-- `ANALYZE` - 테이블 통계 분석 및 업데이트 (선택적 허용, 기본값: 비허용)
+- `EXPLAIN` - 쿼리 실행 계획 및 성능 분석 (기본 허용, 읽기 전용)
+- `ANALYZE` - 테이블 통계 분석 (기본 허용, 읽기 전용)
 
 ## 요구사항
 
@@ -105,7 +105,7 @@ npx -y @smithery/cli install @cano721/mysql-mcp-server --client claude
 
 **보안 설정:**
 - `MYSQL_ALLOW_EXPLAIN`: EXPLAIN 쿼리 허용 여부 (기본값: true, 비활성화: false)
-- `MYSQL_ALLOW_ANALYZE`: ANALYZE 쿼리 허용 여부 (기본값: false, 활성화: true)
+- `MYSQL_ALLOW_ANALYZE`: ANALYZE 쿼리 허용 여부 (기본값: true, 비활성화: false)
 
 ### 3. MCP 설정에 추가
 
@@ -267,7 +267,7 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 }
 ```
 
-**ANALYZE 사용 예제** (MYSQL_ALLOW_ANALYZE=true 필요):
+**ANALYZE 사용 예제**:
 ```json
 {
   "server_name": "mysql",
@@ -314,7 +314,7 @@ MySQL 연결 풀 동작을 더 세밀하게 제어하려면 추가 매개변수�
         "MYSQL_IDLE_TIMEOUT": "60000",
         "MYSQL_MAX_IDLE": "10",
         "MYSQL_ALLOW_EXPLAIN": "true",
-        "MYSQL_ALLOW_ANALYZE": "false"
+        "MYSQL_ALLOW_ANALYZE": "true"
       },
       "disabled": false,
       "autoApprove": []
@@ -331,7 +331,7 @@ MySQL 연결 풀 동작을 더 세밀하게 제어하려면 추가 매개변수�
 - `MYSQL_IDLE_TIMEOUT`: 연결이 해제되기 전까지 유휴 상태로 있을 수 있는 시간 (밀리초 단위)
 - `MYSQL_MAX_IDLE`: 풀에 유지할 최대 유휴 연결 수 설정
 - `MYSQL_ALLOW_EXPLAIN`: EXPLAIN 쿼리 허용 여부 (기본값: true)
-- `MYSQL_ALLOW_ANALYZE`: ANALYZE 쿼리 허용 여부 (기본값: false)
+- `MYSQL_ALLOW_ANALYZE`: ANALYZE 쿼리 허용 여부 (기본값: true)
 
 ## 테스트
 

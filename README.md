@@ -343,6 +343,11 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 - `table` (필수): 연관 테이블을 찾을 기준 테이블명
 - `database` (선택사항): 데이터베이스명
 - `depth` (선택사항): 탐색할 최대 깊이 (기본값: 3, 10 초과 시 경고)
+- `include_pattern_match` (선택사항): 컬럼명 패턴 매칭 포함 여부 (기본값: false)
+
+**검색 방법**:
+1. **FK 제약조건 기반** (기본): 실제 Foreign Key가 설정된 테이블만 조회
+2. **패턴 매칭 포함**: `user_sn`, `user_id` 같은 컬럼명 패턴으로 추가 테이블 탐색
 
 **예제**:
 ```json
@@ -357,29 +362,41 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 }
 ```
 
+**패턴 매칭 포함 예제**:
+```json
+{
+  "server_name": "mysql",
+  "tool_name": "get_related_tables",
+  "arguments": {
+    "database": "my_database",
+    "table": "user",
+    "depth": 2,
+    "include_pattern_match": true
+  }
+}
+```
+
 **응답 예시**:
 ```json
 {
   "root_table": "user",
   "database": "my_database",
   "requested_depth": 2,
+  "search_method": "fk_constraint",
+  "fk_relations_count": 55,
+  "pattern_match_count": 0,
   "total_relations": 55,
-  "relations": [
+  "fk_relations": [
     {
       "depth": 1,
       "child_table": "user_matching_information",
       "fk_column": "user_sn",
       "parent_table": "user",
-      "constraint_name": "FK_USER_MATCHING_INFORMATION_USER_SN"
-    },
-    {
-      "depth": 2,
-      "child_table": "user_matching_profile",
-      "fk_column": "user_matching_information_sn",
-      "parent_table": "user_matching_information",
-      "constraint_name": "FK_USER_MATCHING_PROFILE_USER_INFORMATION_SN"
+      "constraint_name": "FK_USER_MATCHING_INFORMATION_USER_SN",
+      "match_type": "fk_constraint"
     }
-  ]
+  ],
+  "note": "FK 제약조건 기반으로 조회되었습니다. 패턴 매칭도 포함하려면 '패턴 매칭도 포함해줘'라고 요청해보세요."
 }
 ```
 
@@ -775,6 +792,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx @cano721/mysql-mcp-s
 
 | 버전 | 날짜 | 주요 변경 사항 |
 |------|------|---------------|
+| 0.8.0 | 2025-01-09 | `get_related_tables`에 패턴 매칭 옵션 추가, depth 제한 제거 |
 | 0.7.0 | 2025-01-09 | `get_related_tables` 도구 추가 (FK 기반 연관 테이블 depth별 조회) |
 | 0.6.0 | 2025-01-09 | `analyze_table` → `analyze_query`로 변경, `@latest` 태그 문서 추가 |
 | 0.5.0 | 2025-01-09 | `explain_query`, `analyze_table` 전용 도구 추가 |

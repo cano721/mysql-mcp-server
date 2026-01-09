@@ -2,6 +2,16 @@
 
 모든 주요 변경 사항이 이 파일에 기록됩니다.
 
+## [0.8.0] - 2025-01-09
+
+### Added
+- `get_related_tables`에 `include_pattern_match` 옵션 추가
+- 컬럼명 패턴 매칭으로 FK 없는 연관 테이블도 탐색 가능
+
+### Changed
+- depth 제한 제거 (10 초과 시 경고만 표시)
+- 응답에 `match_type` 필드 추가 (fk_constraint / pattern_match)
+
 ## [0.7.0] - 2025-01-09
 
 ### Added

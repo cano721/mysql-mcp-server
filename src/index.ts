@@ -140,7 +140,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     },
     {
       name: "get_related_tables",
-      description: "Get all tables related to a specific table through foreign keys (parent and child relationships with depth)",
+      description: "Get all tables related to a specific table through foreign keys (parent and child relationships with depth). Results are based on FK constraints only. Set include_pattern_match=true to also find tables by column name patterns.",
       inputSchema: {
         type: "object",
         properties: {
@@ -155,6 +155,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           depth: {
             type: "number",
             description: "Maximum depth to traverse relationships (default: 3, warning if > 10)"
+          },
+          include_pattern_match: {
+            type: "boolean",
+            description: "Include tables found by column name pattern matching (e.g., user_sn, user_id). Default: false"
           }
         },
         required: ["table"]
@@ -376,6 +380,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const table = request.params.arguments?.table as string;
         const database = request.params.arguments?.database as string | undefined;
         const requestedDepth = request.params.arguments?.depth as number || 3;
+        const includePatternMatch = request.params.arguments?.include_pattern_match as boolean || false;
         
         if (!table) {
           throw new McpError(ErrorCode.InvalidParams, "Table name is required");
@@ -404,6 +409,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           fk_column: string;
           parent_table: string;
           constraint_name: string;
+          match_type: 'fk_constraint' | 'pattern_match';
         }
 
         const results: RelatedTable[] = [];
@@ -441,7 +447,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               child_table: row.child_table,
               fk_column: row.fk_column,
               parent_table: row.parent_table,
-              constraint_name: row.constraint_name
+              constraint_name: row.constraint_name,
+              match_type: 'fk_constraint'
             });
 
             if (!visited.has(row.child_table)) {
@@ -483,7 +490,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 child_table: row.child_table,
                 fk_column: row.fk_column,
                 parent_table: row.parent_table,
-                constraint_name: row.constraint_name
+                constraint_name: row.constraint_name,
+                match_type: 'fk_constraint'
               });
             }
 
@@ -500,12 +508,65 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           return a.child_table.localeCompare(b.child_table);
         });
 
+        // Pattern matching for tables without FK constraints
+        let patternMatchResults: RelatedTable[] = [];
+        if (includePatternMatch) {
+          console.error('[Tool] Including pattern match results');
+          
+          // Common patterns: table_sn, table_id, table_code, sn_table, id_table
+          const patterns = [
+            `${table}_sn`, `${table}_id`, `${table}_code`,
+            `sn_${table}`, `id_${table}`,
+            `${table}sn`, `${table}id`
+          ];
+          
+          const patternQuery = `
+            SELECT DISTINCT
+              c.TABLE_NAME as related_table,
+              c.COLUMN_NAME as matching_column
+            FROM information_schema.COLUMNS c
+            WHERE c.TABLE_SCHEMA = ?
+              AND c.TABLE_NAME != ?
+              AND (${patterns.map(() => 'LOWER(c.COLUMN_NAME) = LOWER(?)').join(' OR ')})
+          `;
+          
+          const { rows: patternRows } = await executeQuery(
+            pool,
+            patternQuery,
+            [dbName, table, ...patterns]
+          );
+
+          // Filter out tables already found via FK
+          const fkTables = new Set(results.map(r => r.child_table));
+          fkTables.add(table);
+          
+          for (const row of patternRows as any[]) {
+            if (!fkTables.has(row.related_table)) {
+              patternMatchResults.push({
+                depth: 1,
+                child_table: row.related_table,
+                fk_column: row.matching_column,
+                parent_table: table,
+                constraint_name: '(pattern match)',
+                match_type: 'pattern_match'
+              });
+            }
+          }
+        }
+
         const response: any = {
           root_table: table,
           database: dbName,
           requested_depth: requestedDepth,
-          total_relations: results.length,
-          relations: results
+          search_method: includePatternMatch ? 'fk_constraint + pattern_match' : 'fk_constraint',
+          fk_relations_count: results.length,
+          pattern_match_count: patternMatchResults.length,
+          total_relations: results.length + patternMatchResults.length,
+          fk_relations: results,
+          pattern_match_relations: includePatternMatch ? patternMatchResults : undefined,
+          note: includePatternMatch 
+            ? "FK 제약조건 + 컬럼명 패턴 매칭 결과입니다." 
+            : "FK 제약조건 기반으로 조회되었습니다. 패턴 매칭도 포함하려면 '패턴 매칭도 포함해줘'라고 요청해보세요."
         };
 
         if (warning) {

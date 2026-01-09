@@ -22,16 +22,17 @@
 
 ## 보안 기능
 
-- **읽기 전용 접근**: SELECT, SHOW, DESCRIBE, EXPLAIN 문만 허용
+- **읽기 전용 접근**: SELECT, SHOW, DESCRIBE 문 항상 허용, EXPLAIN 선택적 허용
 - **쿼리 검증**: SQL 인젝션 방지 및 데이터 수정 시도 차단
 - **쿼리 타임아웃**: 장시간 실행되는 쿼리로부터 리소스 보호
 - **행 제한**: 과도한 데이터 반환 방지 (최대 1000행)
+- **선택적 기능 제어**: EXPLAIN 쿼리 허용/차단 설정 가능
 
 **지원되는 SQL 명령어**:
-- `SELECT` - 데이터 조회 및 분석
-- `SHOW` - 데이터베이스/테이블/인덱스 정보 조회
-- `DESCRIBE` / `DESC` - 테이블 구조 및 컬럼 정보
-- `EXPLAIN` - 쿼리 실행 계획 및 성능 분석
+- `SELECT` - 데이터 조회 및 분석 (항상 허용)
+- `SHOW` - 데이터베이스/테이블/인덱스 정보 조회 (항상 허용)
+- `DESCRIBE` / `DESC` - 테이블 구조 및 컬럼 정보 (항상 허용)
+- `EXPLAIN` - 쿼리 실행 계획 및 성능 분석 (선택적 허용, 기본값: 허용)
 
 ## 요구사항
 
@@ -91,11 +92,17 @@ npx -y @smithery/cli install @cano721/mysql-mcp-server --client claude
 
 서버는 다음 환경 변수가 필요합니다:
 
+**필수 환경 변수:**
 - `MYSQL_HOST`: 데이터베이스 서버 호스트명
-- `MYSQL_PORT`: 데이터베이스 서버 포트 (기본값: 3306)
 - `MYSQL_USER`: 데이터베이스 사용자명
-- `MYSQL_PASSWORD`: 데이터베이스 비밀번호 (선택사항, 보안 연결에 권장)
-- `MYSQL_DATABASE`: 기본 데이터베이스명 (선택사항)
+
+**선택적 환경 변수:**
+- `MYSQL_PORT`: 데이터베이스 서버 포트 (기본값: 3306)
+- `MYSQL_PASSWORD`: 데이터베이스 비밀번호 (보안 연결에 권장)
+- `MYSQL_DATABASE`: 기본 데이터베이스명
+
+**보안 설정:**
+- `MYSQL_ALLOW_EXPLAIN`: EXPLAIN 쿼리 허용 여부 (기본값: true, 비활성화: false)
 
 ### 3. MCP 설정에 추가
 
@@ -290,7 +297,8 @@ MySQL 연결 풀 동작을 더 세밀하게 제어하려면 추가 매개변수�
         "MYSQL_QUEUE_LIMIT": "0",
         "MYSQL_CONNECT_TIMEOUT": "10000",
         "MYSQL_IDLE_TIMEOUT": "60000",
-        "MYSQL_MAX_IDLE": "10"
+        "MYSQL_MAX_IDLE": "10",
+        "MYSQL_ALLOW_EXPLAIN": "true"
       },
       "disabled": false,
       "autoApprove": []
@@ -306,6 +314,7 @@ MySQL 연결 풀 동작을 더 세밀하게 제어하려면 추가 매개변수�
 - `MYSQL_CONNECT_TIMEOUT`: 연결 타임아웃을 밀리초 단위로 조정 (기본값: 10000)
 - `MYSQL_IDLE_TIMEOUT`: 연결이 해제되기 전까지 유휴 상태로 있을 수 있는 시간 (밀리초 단위)
 - `MYSQL_MAX_IDLE`: 풀에 유지할 최대 유휴 연결 수 설정
+- `MYSQL_ALLOW_EXPLAIN`: EXPLAIN 쿼리 허용 여부 (기본값: true)
 
 ## 테스트
 

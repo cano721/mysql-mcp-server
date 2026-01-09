@@ -9,6 +9,10 @@ const ALLOWED_COMMANDS = [
   'SHOW',
   'DESCRIBE',
   'DESC',
+];
+
+// Optional commands that can be enabled/disabled
+const OPTIONAL_COMMANDS = [
   'EXPLAIN',
 ];
 
@@ -38,6 +42,21 @@ const DISALLOWED_COMMANDS = [
 ];
 
 /**
+ * Get allowed commands based on environment configuration
+ */
+function getAllowedCommands(): string[] {
+  const allowedCommands = [...ALLOWED_COMMANDS];
+  
+  // Check if EXPLAIN is enabled (default: true)
+  const allowExplain = process.env.MYSQL_ALLOW_EXPLAIN !== 'false';
+  if (allowExplain) {
+    allowedCommands.push(...OPTIONAL_COMMANDS);
+  }
+  
+  return allowedCommands;
+}
+
+/**
  * Validates if a SQL query is read-only
  * @param query SQL query to validate
  * @returns true if the query is read-only, false otherwise
@@ -51,8 +70,11 @@ export function isReadOnlyQuery(query: string): boolean {
     .trim()
     .toUpperCase();
   
+  // Get currently allowed commands
+  const allowedCommands = getAllowedCommands();
+  
   // Check if query starts with an allowed command
-  const startsWithAllowed = ALLOWED_COMMANDS.some(cmd => 
+  const startsWithAllowed = allowedCommands.some(cmd => 
     normalizedQuery.startsWith(cmd + ' ') || normalizedQuery === cmd
   );
   
@@ -85,7 +107,8 @@ export function validateQuery(query: string): void {
   
   if (!isReadOnlyQuery(query)) {
     console.error('[Validator] Query rejected: not read-only');
-    throw new Error('Only read-only queries are allowed (SELECT, SHOW, DESCRIBE, EXPLAIN)');
+    const allowedCommands = getAllowedCommands();
+    throw new Error(`Only read-only queries are allowed (${allowedCommands.join(', ')})`);
   }
   
   console.error('[Validator] Query validated as read-only');

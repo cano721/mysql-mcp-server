@@ -61,6 +61,16 @@ const server = new Server(
  * Handler that lists available tools for MySQL database access
  */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
+  // Check if EXPLAIN is enabled
+  const allowExplain = process.env.MYSQL_ALLOW_EXPLAIN !== 'false';
+  
+  // Build allowed commands description
+  const allowedCommands = ['SELECT', 'SHOW', 'DESCRIBE'];
+  if (allowExplain) {
+    allowedCommands.push('EXPLAIN');
+  }
+  const commandsDescription = `SQL query (only ${allowedCommands.join(', ')} statements are allowed)`;
+  
   return {
     tools: [
       {
@@ -112,7 +122,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             query: {
               type: "string",
-              description: "SQL query (only SELECT, SHOW, DESCRIBE, and EXPLAIN statements are allowed)"
+              description: commandsDescription
             },
             database: {
               type: "string",

@@ -125,6 +125,9 @@ export function getConfigFromEnv(): MySQLConfig {
   const idleTimeoutStr = process.env.MYSQL_IDLE_TIMEOUT;
   const maxIdleStr = process.env.MYSQL_MAX_IDLE;
   
+  // Security options
+  const allowExplain = process.env.MYSQL_ALLOW_EXPLAIN !== 'false'; // Default: true
+  
   if (!host) throw new Error('MYSQL_HOST environment variable is required');
   if (!user) throw new Error('MYSQL_USER environment variable is required');
   
@@ -136,6 +139,10 @@ export function getConfigFromEnv(): MySQLConfig {
   const connectTimeout = connectTimeoutStr ? parseInt(connectTimeoutStr, 10) : undefined;
   const idleTimeout = idleTimeoutStr ? parseInt(idleTimeoutStr, 10) : undefined;
   const maxIdle = maxIdleStr ? parseInt(maxIdleStr, 10) : undefined;
+  
+  console.error('[Setup] Security settings:', { 
+    allowExplain 
+  });
   
   return { 
     host, 

@@ -795,6 +795,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx @cano721/mysql-mcp-s
 
 | 버전 | 날짜 | 주요 변경 사항 |
 |------|------|---------------|
+| 0.9.1 | 2025-01-09 | `get_related_tables` 응답 크기 최적화 (포맷 변환은 LLM이 수행) |
 | 0.9.0 | 2025-01-09 | `get_related_tables` 응답 구조 개선 및 최적화 |
 | 0.8.0 | 2025-01-09 | `get_related_tables`에 패턴 매칭 옵션 추가, depth 제한 제거 |
 | 0.7.0 | 2025-01-09 | `get_related_tables` 도구 추가 (FK 기반 연관 테이블 depth별 조회) |

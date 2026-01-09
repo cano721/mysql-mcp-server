@@ -54,6 +54,19 @@
 npx @cano721/mysql-mcp-server
 ```
 
+**💡 항상 최신 버전 사용하기:**
+```bash
+# @latest 태그를 붙이면 캐시를 무시하고 항상 최신 버전을 가져옵니다
+npx @cano721/mysql-mcp-server@latest
+```
+
+MCP 설정에서도 `@latest`를 사용하면 항상 최신 버전을 사용할 수 있습니다:
+```json
+{
+  "args": ["@cano721/mysql-mcp-server@latest"]
+}
+```
+
 **주의**: 일부 MCP 클라이언트에서 npx가 제대로 작동하지 않을 수 있습니다. 그런 경우 방법 2를 사용하세요.
 
 ### 방법 2: 전역 설치 (npx가 안 될 때 권장)
@@ -117,7 +130,7 @@ MCP 설정 파일에 다음 구성을 추가하세요:
   "mcpServers": {
     "mysql": {
       "command": "npx",
-      "args": ["@cano721/mysql-mcp-server"],
+      "args": ["@cano721/mysql-mcp-server@latest"],
       "env": {
         "MYSQL_HOST": "your-mysql-host",
         "MYSQL_PORT": "3306",
@@ -301,22 +314,22 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 }
 ```
 
-### analyze_table
+### analyze_query
 
-테이블 통계를 분석합니다 (MYSQL_ALLOW_ANALYZE=true 필요).
+쿼리 성능 및 통계를 분석합니다 (MYSQL_ALLOW_ANALYZE=true 필요).
 
 **매개변수**:
-- `table` (필수): 분석할 테이블명
+- `query` (필수): 분석할 SQL 쿼리
 - `database` (선택사항): 데이터베이스명
 
 **예제**:
 ```json
 {
   "server_name": "mysql",
-  "tool_name": "analyze_table",
+  "tool_name": "analyze_query",
   "arguments": {
     "database": "my_database",
-    "table": "users"
+    "query": "SELECT * FROM users WHERE id = 1"
   }
 }
 ```
@@ -342,7 +355,7 @@ MySQL 연결 풀 동작을 더 세밀하게 제어하려면 추가 매개변수�
   "mcpServers": {
     "mysql": {
       "command": "npx",
-      "args": ["@cano721/mysql-mcp-server"],
+      "args": ["@cano721/mysql-mcp-server@latest"],
       "env": {
         "MYSQL_HOST": "your-mysql-host",
         "MYSQL_PORT": "3306",
@@ -436,7 +449,7 @@ Kiro IDE에서 이 MCP 서버를 사용하는 예제:
   "mcpServers": {
     "mysql": {
       "command": "npx",
-      "args": ["@cano721/mysql-mcp-server"],
+      "args": ["@cano721/mysql-mcp-server@latest"],
       "env": {
         "MYSQL_HOST": "localhost",
         "MYSQL_PORT": "4307",
@@ -459,7 +472,7 @@ IntelliJ IDEA의 GitHub Copilot에서 MCP 서버를 사용하려면:
   "servers": {
     "mysql": {
       "command": "npx",
-      "args": ["@cano721/mysql-mcp-server"],
+      "args": ["@cano721/mysql-mcp-server@latest"],
       "env": {
         "MYSQL_HOST": "localhost",
         "MYSQL_PORT": "4307",
@@ -502,7 +515,7 @@ Cursor IDE에서 MCP 서버를 사용하려면 `.cursor/mcp.json` 파일을 생�
       "name": "mysql",
       "type": "command",
       "command": "npx",
-      "arguments": ["@cano721/mysql-mcp-server"],
+      "arguments": ["@cano721/mysql-mcp-server@latest"],
       "environment": {
         "MYSQL_HOST": "localhost",
         "MYSQL_PORT": "4307",
@@ -649,7 +662,7 @@ MCP 설정에서 환경 변수가 제대로 설정되었는지 확인:
   "mcpServers": {
     "mysql": {
       "command": "npx",
-      "args": ["@cano721/mysql-mcp-server"],
+      "args": ["@cano721/mysql-mcp-server@latest"],
       "env": {
         "MYSQL_HOST": "localhost",
         "MYSQL_PORT": "4307",

@@ -137,6 +137,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         },
         required: ["query"]
       }
+    },
+    {
+      name: "get_related_tables",
+      description: "Get all tables related to a specific table through foreign keys (parent and child relationships with depth)",
+      inputSchema: {
+        type: "object",
+        properties: {
+          table: {
+            type: "string",
+            description: "Table name to find related tables for"
+          },
+          database: {
+            type: "string",
+            description: "Database name (optional, uses default if not specified)"
+          },
+          depth: {
+            type: "number",
+            description: "Maximum depth to traverse relationships (default: 3, warning if > 10)"
+          }
+        },
+        required: ["table"]
+      }
     }
   ];
 
@@ -344,6 +366,156 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [{
             type: "text",
             text: JSON.stringify(rows, null, 2)
+          }]
+        };
+      }
+
+      case "get_related_tables": {
+        console.error('[Tool] Executing get_related_tables');
+        
+        const table = request.params.arguments?.table as string;
+        const database = request.params.arguments?.database as string | undefined;
+        const requestedDepth = request.params.arguments?.depth as number || 3;
+        
+        if (!table) {
+          throw new McpError(ErrorCode.InvalidParams, "Table name is required");
+        }
+
+        // Warning for deep queries
+        let warning: string | undefined;
+        if (requestedDepth > 10) {
+          warning = `⚠️ Warning: depth ${requestedDepth} may take a long time and return a large amount of data.`;
+          console.error(`[Warning] Deep query requested: depth=${requestedDepth}`);
+        }
+
+        // Get the actual database name
+        let dbName = database;
+        if (!dbName) {
+          const { rows: dbRows } = await executeQuery(pool, 'SELECT DATABASE() as db');
+          dbName = (dbRows as any[])[0]?.db;
+          if (!dbName) {
+            throw new McpError(ErrorCode.InvalidParams, "Database name is required (no default database set)");
+          }
+        }
+
+        interface RelatedTable {
+          depth: number;
+          child_table: string;
+          fk_column: string;
+          parent_table: string;
+          constraint_name: string;
+        }
+
+        const results: RelatedTable[] = [];
+        const visited = new Set<string>();
+        const queue: { tableName: string; depth: number }[] = [{ tableName: table, depth: 0 }];
+        visited.add(table);
+
+        while (queue.length > 0) {
+          const current = queue.shift()!;
+          
+          if (current.depth >= requestedDepth) continue;
+
+          // Find child tables (tables that reference the current table)
+          const childQuery = `
+            SELECT 
+              TABLE_NAME as child_table,
+              COLUMN_NAME as fk_column,
+              REFERENCED_TABLE_NAME as parent_table,
+              CONSTRAINT_NAME as constraint_name
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE REFERENCED_TABLE_SCHEMA = ?
+              AND REFERENCED_TABLE_NAME = ?
+              AND REFERENCED_TABLE_NAME IS NOT NULL
+          `;
+          
+          const { rows: childRows } = await executeQuery(
+            pool,
+            childQuery,
+            [dbName, current.tableName]
+          );
+
+          for (const row of childRows as any[]) {
+            results.push({
+              depth: current.depth + 1,
+              child_table: row.child_table,
+              fk_column: row.fk_column,
+              parent_table: row.parent_table,
+              constraint_name: row.constraint_name
+            });
+
+            if (!visited.has(row.child_table)) {
+              visited.add(row.child_table);
+              queue.push({ tableName: row.child_table, depth: current.depth + 1 });
+            }
+          }
+
+          // Find parent tables (tables that the current table references)
+          const parentQuery = `
+            SELECT 
+              TABLE_NAME as child_table,
+              COLUMN_NAME as fk_column,
+              REFERENCED_TABLE_NAME as parent_table,
+              CONSTRAINT_NAME as constraint_name
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = ?
+              AND TABLE_NAME = ?
+              AND REFERENCED_TABLE_NAME IS NOT NULL
+          `;
+          
+          const { rows: parentRows } = await executeQuery(
+            pool,
+            parentQuery,
+            [dbName, current.tableName]
+          );
+
+          for (const row of parentRows as any[]) {
+            // Only add if not already in results (avoid duplicates)
+            const exists = results.some(r => 
+              r.child_table === row.child_table && 
+              r.parent_table === row.parent_table &&
+              r.fk_column === row.fk_column
+            );
+            
+            if (!exists) {
+              results.push({
+                depth: current.depth + 1,
+                child_table: row.child_table,
+                fk_column: row.fk_column,
+                parent_table: row.parent_table,
+                constraint_name: row.constraint_name
+              });
+            }
+
+            if (!visited.has(row.parent_table)) {
+              visited.add(row.parent_table);
+              queue.push({ tableName: row.parent_table, depth: current.depth + 1 });
+            }
+          }
+        }
+
+        // Sort by depth, then by child_table
+        results.sort((a, b) => {
+          if (a.depth !== b.depth) return a.depth - b.depth;
+          return a.child_table.localeCompare(b.child_table);
+        });
+
+        const response: any = {
+          root_table: table,
+          database: dbName,
+          requested_depth: requestedDepth,
+          total_relations: results.length,
+          relations: results
+        };
+
+        if (warning) {
+          response.warning = warning;
+        }
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify(response, null, 2)
           }]
         };
       }

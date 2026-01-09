@@ -335,6 +335,54 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 }
 ```
 
+### get_related_tables
+
+특정 테이블과 FK로 연결된 모든 연관 테이블을 depth별로 조회합니다.
+
+**매개변수**:
+- `table` (필수): 연관 테이블을 찾을 기준 테이블명
+- `database` (선택사항): 데이터베이스명
+- `depth` (선택사항): 탐색할 최대 깊이 (기본값: 3, 10 초과 시 경고)
+
+**예제**:
+```json
+{
+  "server_name": "mysql",
+  "tool_name": "get_related_tables",
+  "arguments": {
+    "database": "my_database",
+    "table": "user",
+    "depth": 2
+  }
+}
+```
+
+**응답 예시**:
+```json
+{
+  "root_table": "user",
+  "database": "my_database",
+  "requested_depth": 2,
+  "total_relations": 55,
+  "relations": [
+    {
+      "depth": 1,
+      "child_table": "user_matching_information",
+      "fk_column": "user_sn",
+      "parent_table": "user",
+      "constraint_name": "FK_USER_MATCHING_INFORMATION_USER_SN"
+    },
+    {
+      "depth": 2,
+      "child_table": "user_matching_profile",
+      "fk_column": "user_matching_information_sn",
+      "parent_table": "user_matching_information",
+      "constraint_name": "FK_USER_MATCHING_PROFILE_USER_INFORMATION_SN"
+    }
+  ]
+}
+```
+
 **SHOW 명령어 예제**:
 ```json
 {
@@ -727,6 +775,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx @cano721/mysql-mcp-s
 
 | 버전 | 날짜 | 주요 변경 사항 |
 |------|------|---------------|
+| 0.7.0 | 2025-01-09 | `get_related_tables` 도구 추가 (FK 기반 연관 테이블 depth별 조회) |
 | 0.6.0 | 2025-01-09 | `analyze_table` → `analyze_query`로 변경, `@latest` 태그 문서 추가 |
 | 0.5.0 | 2025-01-09 | `explain_query`, `analyze_table` 전용 도구 추가 |
 | 0.4.0 | 2025-01-09 | EXPLAIN/ANALYZE 지원, 연결 풀 기본값 1로 변경 |

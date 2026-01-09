@@ -279,6 +279,48 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 }
 ```
 
+### explain_query
+
+쿼리 실행 계획을 분석합니다 (MYSQL_ALLOW_EXPLAIN=true 필요).
+
+**매개변수**:
+- `query` (필수): 분석할 SQL 쿼리
+- `database` (선택사항): 데이터베이스명
+- `format` (선택사항): 출력 형식 (TRADITIONAL, JSON, TREE)
+
+**예제**:
+```json
+{
+  "server_name": "mysql",
+  "tool_name": "explain_query",
+  "arguments": {
+    "database": "my_database",
+    "query": "SELECT * FROM users WHERE id = 1",
+    "format": "JSON"
+  }
+}
+```
+
+### analyze_table
+
+테이블 통계를 분석합니다 (MYSQL_ALLOW_ANALYZE=true 필요).
+
+**매개변수**:
+- `table` (필수): 분석할 테이블명
+- `database` (선택사항): 데이터베이스명
+
+**예제**:
+```json
+{
+  "server_name": "mysql",
+  "tool_name": "analyze_table",
+  "arguments": {
+    "database": "my_database",
+    "table": "users"
+  }
+}
+```
+
 **SHOW 명령어 예제**:
 ```json
 {

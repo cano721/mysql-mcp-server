@@ -65,7 +65,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   const allowExplain = process.env.MYSQL_ALLOW_EXPLAIN !== 'false';
   const allowAnalyze = process.env.MYSQL_ALLOW_ANALYZE !== 'false';
   
-  // Build allowed commands description
+  // Build allowed commands description for execute_query
   const allowedCommands = ['SELECT', 'SHOW', 'DESCRIBE'];
   if (allowExplain) {
     allowedCommands.push('EXPLAIN');
@@ -75,69 +75,119 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   }
   const commandsDescription = `SQL query (only ${allowedCommands.join(', ')} statements are allowed)`;
   
-  return {
-    tools: [
-      {
-        name: "list_databases",
-        description: "List all accessible databases on the MySQL server",
-        inputSchema: {
-          type: "object",
-          properties: {},
-          required: []
-        }
-      },
-      {
-        name: "list_tables",
-        description: "List all tables in a specified database",
-        inputSchema: {
-          type: "object",
-          properties: {
-            database: {
-              type: "string",
-              description: "Database name (optional, uses default if not specified)"
-            }
-          },
-          required: []
-        }
-      },
-      {
-        name: "describe_table",
-        description: "Show the schema for a specific table",
-        inputSchema: {
-          type: "object",
-          properties: {
-            database: {
-              type: "string",
-              description: "Database name (optional, uses default if not specified)"
-            },
-            table: {
-              type: "string",
-              description: "Table name"
-            }
-          },
-          required: ["table"]
-        }
-      },
-      {
-        name: "execute_query",
-        description: "Execute a read-only SQL query",
-        inputSchema: {
-          type: "object",
-          properties: {
-            query: {
-              type: "string",
-              description: commandsDescription
-            },
-            database: {
-              type: "string",
-              description: "Database name (optional, uses default if not specified)"
-            }
-          },
-          required: ["query"]
-        }
+  // Build tools array
+  const tools = [
+    {
+      name: "list_databases",
+      description: "List all accessible databases on the MySQL server",
+      inputSchema: {
+        type: "object",
+        properties: {},
+        required: []
       }
-    ]
-  };
+    },
+    {
+      name: "list_tables",
+      description: "List all tables in a specified database",
+      inputSchema: {
+        type: "object",
+        properties: {
+          database: {
+            type: "string",
+            description: "Database name (optional, uses default if not specified)"
+          }
+        },
+        required: []
+      }
+    },
+    {
+      name: "describe_table",
+      description: "Show the schema for a specific table",
+      inputSchema: {
+        type: "object",
+        properties: {
+          database: {
+            type: "string",
+            description: "Database name (optional, uses default if not specified)"
+          },
+          table: {
+            type: "string",
+            description: "Table name"
+          }
+        },
+        required: ["table"]
+      }
+    },
+    {
+      name: "execute_query",
+      description: "Execute a read-only SQL query",
+      inputSchema: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: commandsDescription
+          },
+          database: {
+            type: "string",
+            description: "Database name (optional, uses default if not specified)"
+          }
+        },
+        required: ["query"]
+      }
+    }
+  ];
+
+  // Add explain_query tool if enabled
+  if (allowExplain) {
+    tools.push({
+      name: "explain_query",
+      description: "Analyze query execution plan using EXPLAIN",
+      inputSchema: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "SQL query to analyze (SELECT, UPDATE, DELETE, INSERT, REPLACE statements)"
+          },
+          database: {
+            type: "string",
+            description: "Database name (optional, uses default if not specified)"
+          },
+          format: {
+            type: "string",
+            description: "Output format: TRADITIONAL, JSON, or TREE (optional, default: TRADITIONAL)",
+            enum: ["TRADITIONAL", "JSON", "TREE"]
+          }
+        },
+        required: ["query"]
+      }
+    } as any);
+  }
+
+  // Add analyze_query tool if enabled
+  if (allowAnalyze) {
+    tools.push({
+      name: "analyze_table",
+      description: "Analyze table statistics for query optimization",
+      inputSchema: {
+        type: "object",
+        properties: {
+          table: {
+            type: "string",
+            description: "Table name to analyze"
+          },
+          database: {
+            type: "string",
+            description: "Database name (optional, uses default if not specified)"
+          }
+        },
+        required: ["table"]
+      }
+    } as any);
+  }
+
+  return { tools };
 });
 
 /**
@@ -223,6 +273,64 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const { rows } = await executeQuery(
           pool,
           query,
+          [],
+          database
+        );
+        
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify(rows, null, 2)
+          }]
+        };
+      }
+
+      case "explain_query": {
+        console.error('[Tool] Executing explain_query');
+        
+        const query = request.params.arguments?.query as string;
+        const database = request.params.arguments?.database as string | undefined;
+        const format = request.params.arguments?.format as string | undefined;
+        
+        if (!query) {
+          throw new McpError(ErrorCode.InvalidParams, "Query is required");
+        }
+        
+        // Build EXPLAIN query
+        let explainQuery = 'EXPLAIN';
+        if (format && ['JSON', 'TREE'].includes(format.toUpperCase())) {
+          explainQuery += ` FORMAT=${format.toUpperCase()}`;
+        }
+        explainQuery += ` ${query}`;
+        
+        const { rows } = await executeQuery(
+          pool,
+          explainQuery,
+          [],
+          database
+        );
+        
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify(rows, null, 2)
+          }]
+        };
+      }
+
+      case "analyze_table": {
+        console.error('[Tool] Executing analyze_table');
+        
+        const table = request.params.arguments?.table as string;
+        const database = request.params.arguments?.database as string | undefined;
+        
+        if (!table) {
+          throw new McpError(ErrorCode.InvalidParams, "Table name is required");
+        }
+        
+        const { rows } = await executeQuery(
+          pool,
+          `ANALYZE TABLE \`${table}\``,
           [],
           database
         );

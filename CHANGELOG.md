@@ -4,10 +4,9 @@
 
 ## [0.9.0] - 2025-01-09
 
-### Added
-- `get_related_tables` 응답에 마크다운 테이블 형식 추가 (`table_format`)
-- CSV 형식 추가 (`csv_format`) - 엑셀 복사/붙여넣기 지원
-- 요약 정보 섹션 추가 (`summary`)
+### Changed
+- `get_related_tables` 응답 구조 개선: 메타데이터를 최상위로 이동하여 가독성 향상
+- 응답 크기 최적화: JSON 배열만 반환 (테이블/CSV 변환은 LLM이 필요시 수행)
 
 ## [0.8.1] - 2025-01-09
 

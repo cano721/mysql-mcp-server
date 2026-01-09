@@ -554,32 +554,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           }
         }
 
-        // Generate table format (Markdown)
-        const allRelations = [...results, ...patternMatchResults];
-        let tableFormat = '| depth | child_table | fk_column | parent_table | constraint_name | match_type |\n';
-        tableFormat += '|-------|-------------|-----------|--------------|-----------------|------------|\n';
-        for (const rel of allRelations) {
-          tableFormat += `| ${rel.depth} | ${rel.child_table} | ${rel.fk_column} | ${rel.parent_table} | ${rel.constraint_name} | ${rel.match_type} |\n`;
-        }
-
-        // Generate CSV format
-        let csvFormat = 'depth,child_table,fk_column,parent_table,constraint_name,match_type\n';
-        for (const rel of allRelations) {
-          csvFormat += `${rel.depth},"${rel.child_table}","${rel.fk_column}","${rel.parent_table}","${rel.constraint_name}",${rel.match_type}\n`;
-        }
-
         const response: any = {
-          summary: {
-            root_table: table,
-            database: dbName,
-            requested_depth: requestedDepth,
-            search_method: includePatternMatch ? 'fk_constraint + pattern_match' : 'fk_constraint',
-            fk_relations_count: results.length,
-            pattern_match_count: patternMatchResults.length,
-            total_relations: allRelations.length
-          },
-          table_format: tableFormat,
-          csv_format: csvFormat,
+          root_table: table,
+          database: dbName,
+          requested_depth: requestedDepth,
+          search_method: includePatternMatch ? 'fk_constraint + pattern_match' : 'fk_constraint',
+          fk_relations_count: results.length,
+          pattern_match_count: patternMatchResults.length,
+          total_relations: results.length + patternMatchResults.length,
           fk_relations: results,
           pattern_match_relations: includePatternMatch ? patternMatchResults : undefined,
           note: includePatternMatch 

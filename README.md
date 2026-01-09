@@ -400,6 +400,9 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 }
 ```
 
+> **참고**: 응답은 JSON 배열 형태로 제공됩니다. 테이블이나 CSV 형식이 필요한 경우 LLM에게 변환을 요청하세요.
+```
+
 **SHOW 명령어 예제**:
 ```json
 {
@@ -792,7 +795,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx @cano721/mysql-mcp-s
 
 | 버전 | 날짜 | 주요 변경 사항 |
 |------|------|---------------|
-| 0.9.0 | 2025-01-09 | `get_related_tables` 테이블/CSV 형식 추가 (엑셀 복사 지원) |
+| 0.9.0 | 2025-01-09 | `get_related_tables` 응답 구조 개선 및 최적화 |
 | 0.8.0 | 2025-01-09 | `get_related_tables`에 패턴 매칭 옵션 추가, depth 제한 제거 |
 | 0.7.0 | 2025-01-09 | `get_related_tables` 도구 추가 (FK 기반 연관 테이블 depth별 조회) |
 | 0.6.0 | 2025-01-09 | `analyze_table` → `analyze_query`로 변경, `@latest` 태그 문서 추가 |

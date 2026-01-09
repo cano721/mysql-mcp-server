@@ -65,6 +65,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   const allowExplain = process.env.MYSQL_ALLOW_EXPLAIN !== 'false';
   const allowAnalyze = process.env.MYSQL_ALLOW_ANALYZE !== 'false';
   
+  console.error('[Setup] Security settings:', { allowExplain, allowAnalyze });
+  
   // Build allowed commands description for execute_query
   const allowedCommands = ['SELECT', 'SHOW', 'DESCRIBE'];
   if (allowExplain) {
@@ -168,21 +170,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   // Add analyze_query tool if enabled
   if (allowAnalyze) {
     tools.push({
-      name: "analyze_table",
-      description: "Analyze table statistics for query optimization",
+      name: "analyze_query",
+      description: "Analyze query performance and statistics using ANALYZE",
       inputSchema: {
         type: "object",
         properties: {
-          table: {
+          query: {
             type: "string",
-            description: "Table name to analyze"
+            description: "SQL query to analyze (SELECT, UPDATE, DELETE, INSERT, REPLACE statements)"
           },
           database: {
             type: "string",
             description: "Database name (optional, uses default if not specified)"
           }
         },
-        required: ["table"]
+        required: ["query"]
       }
     } as any);
   }
@@ -318,19 +320,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case "analyze_table": {
-        console.error('[Tool] Executing analyze_table');
+      case "analyze_query": {
+        console.error('[Tool] Executing analyze_query');
         
-        const table = request.params.arguments?.table as string;
+        const query = request.params.arguments?.query as string;
         const database = request.params.arguments?.database as string | undefined;
         
-        if (!table) {
-          throw new McpError(ErrorCode.InvalidParams, "Table name is required");
+        if (!query) {
+          throw new McpError(ErrorCode.InvalidParams, "Query is required");
         }
+        
+        // Build ANALYZE query
+        const analyzeQuery = `ANALYZE ${query}`;
         
         const { rows } = await executeQuery(
           pool,
-          `ANALYZE TABLE \`${table}\``,
+          analyzeQuery,
           [],
           database
         );

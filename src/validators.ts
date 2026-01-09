@@ -14,6 +14,7 @@ const ALLOWED_COMMANDS = [
 // Optional commands that can be enabled/disabled
 const OPTIONAL_COMMANDS = [
   'EXPLAIN',
+  'ANALYZE',
 ];
 
 // List of disallowed SQL commands (write operations)
@@ -50,7 +51,13 @@ function getAllowedCommands(): string[] {
   // Check if EXPLAIN is enabled (default: true)
   const allowExplain = process.env.MYSQL_ALLOW_EXPLAIN !== 'false';
   if (allowExplain) {
-    allowedCommands.push(...OPTIONAL_COMMANDS);
+    allowedCommands.push('EXPLAIN');
+  }
+  
+  // Check if ANALYZE is enabled (default: false)
+  const allowAnalyze = process.env.MYSQL_ALLOW_ANALYZE === 'true';
+  if (allowAnalyze) {
+    allowedCommands.push('ANALYZE');
   }
   
   return allowedCommands;

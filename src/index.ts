@@ -81,7 +81,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   const tools = [
     {
       name: "list_databases",
-      description: "List all accessible databases on the MySQL server",
+      description: "List all accessible databases on the MySQL server. 한글: 데이터베이스 목록, DB 목록, 데이터베이스 조회",
       inputSchema: {
         type: "object",
         properties: {},
@@ -90,7 +90,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     },
     {
       name: "list_tables",
-      description: "List all tables in a specified database",
+      description: "List all tables in a specified database. 한글: 테이블 목록, 테이블 조회, 테이블 리스트",
       inputSchema: {
         type: "object",
         properties: {
@@ -104,7 +104,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     },
     {
       name: "describe_table",
-      description: "Show the schema for a specific table",
+      description: "Show the schema for a specific table. 한글: 테이블 스키마, 테이블 구조, 컬럼 정보, 테이블 설명",
       inputSchema: {
         type: "object",
         properties: {
@@ -122,7 +122,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     },
     {
       name: "execute_query",
-      description: "Execute a read-only SQL query",
+      description: "Execute a read-only SQL query. 한글: 쿼리 실행, SQL 실행, 조회 쿼리",
       inputSchema: {
         type: "object",
         properties: {
@@ -140,7 +140,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     },
     {
       name: "get_related_tables",
-      description: "Find all related/connected/associated tables linked to a specific table through foreign keys. Discovers table relationships and dependencies with depth traversal. Use this when asked to find related tables, connected tables, associated tables, or table relationships.",
+      description: "Find all related/connected/associated tables linked to a specific table through foreign keys. Discovers table relationships and dependencies with depth traversal. Use this when asked to find related tables, connected tables, associated tables, or table relationships. 한글: 연관 테이블, 관련 테이블, 연결된 테이블, 테이블 관계, 참조 테이블, FK 관계",
       inputSchema: {
         type: "object",
         properties: {
@@ -170,7 +170,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   if (allowExplain) {
     tools.push({
       name: "explain_query",
-      description: "Analyze query execution plan using EXPLAIN",
+      description: "Analyze query execution plan using EXPLAIN. 한글: 쿼리 실행 계획, 쿼리 분석, EXPLAIN",
       inputSchema: {
         type: "object",
         properties: {
@@ -197,7 +197,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   if (allowAnalyze) {
     tools.push({
       name: "analyze_query",
-      description: "Analyze query performance and statistics using ANALYZE",
+      description: "Analyze query performance and statistics using ANALYZE. 한글: 쿼리 성능 분석, 쿼리 통계, ANALYZE",
       inputSchema: {
         type: "object",
         properties: {
@@ -411,9 +411,57 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           match_type: 'fk_constraint' | 'pattern_match';
         }
 
+        interface CircularReference {
+          path: string[];
+          description: string;
+        }
+
+        // 🚀 최적화: 한 번에 모든 FK 관계를 가져오기
+        console.error('[Tool] Fetching all FK relationships at once');
+        const allFKQuery = `
+          SELECT 
+            TABLE_NAME as child_table,
+            COLUMN_NAME as fk_column,
+            REFERENCED_TABLE_NAME as parent_table
+          FROM information_schema.KEY_COLUMN_USAGE
+          WHERE TABLE_SCHEMA = ?
+            AND REFERENCED_TABLE_NAME IS NOT NULL
+        `;
+        
+        const { rows: allFKRows } = await executeQuery(pool, allFKQuery, [dbName]);
+        
+        // FK 관계를 Map으로 구성 (빠른 조회를 위해)
+        const childToParents = new Map<string, Array<{child: string, fk_column: string, parent: string}>>();
+        const parentToChildren = new Map<string, Array<{child: string, fk_column: string, parent: string}>>();
+        
+        for (const row of allFKRows as any[]) {
+          const relation = {
+            child: row.child_table,
+            fk_column: row.fk_column,
+            parent: row.parent_table
+          };
+          
+          // child -> parent 매핑
+          if (!childToParents.has(row.child_table)) {
+            childToParents.set(row.child_table, []);
+          }
+          childToParents.get(row.child_table)!.push(relation);
+          
+          // parent -> child 매핑
+          if (!parentToChildren.has(row.parent_table)) {
+            parentToChildren.set(row.parent_table, []);
+          }
+          parentToChildren.get(row.parent_table)!.push(relation);
+        }
+
+        console.error(`[Tool] Loaded ${allFKRows.length} FK relationships into memory`);
+
         const results: RelatedTable[] = [];
         const visited = new Set<string>();
-        const queue: { tableName: string; depth: number }[] = [{ tableName: table, depth: 0 }];
+        const circularReferences: CircularReference[] = [];
+        const queue: { tableName: string; depth: number; path: string[] }[] = [
+          { tableName: table, depth: 0, path: [table] }
+        ];
         visited.add(table);
 
         while (queue.length > 0) {
@@ -422,77 +470,73 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           if (current.depth >= requestedDepth) continue;
 
           // Find child tables (tables that reference the current table)
-          const childQuery = `
-            SELECT 
-              TABLE_NAME as child_table,
-              COLUMN_NAME as fk_column,
-              REFERENCED_TABLE_NAME as parent_table
-            FROM information_schema.KEY_COLUMN_USAGE
-            WHERE REFERENCED_TABLE_SCHEMA = ?
-              AND REFERENCED_TABLE_NAME = ?
-              AND REFERENCED_TABLE_NAME IS NOT NULL
-          `;
+          const childRelations = parentToChildren.get(current.tableName) || [];
           
-          const { rows: childRows } = await executeQuery(
-            pool,
-            childQuery,
-            [dbName, current.tableName]
-          );
-
-          for (const row of childRows as any[]) {
+          for (const relation of childRelations) {
             results.push({
               depth: current.depth + 1,
-              child_table: row.child_table,
-              fk_column: row.fk_column,
-              parent_table: row.parent_table,
+              child_table: relation.child,
+              fk_column: relation.fk_column,
+              parent_table: relation.parent,
               match_type: 'fk_constraint'
             });
 
-            if (!visited.has(row.child_table)) {
-              visited.add(row.child_table);
-              queue.push({ tableName: row.child_table, depth: current.depth + 1 });
+            if (!visited.has(relation.child)) {
+              visited.add(relation.child);
+              queue.push({ 
+                tableName: relation.child, 
+                depth: current.depth + 1,
+                path: [...current.path, relation.child]
+              });
+            } else if (current.path.includes(relation.child)) {
+              // 순환 참조 감지
+              const cycleStart = current.path.indexOf(relation.child);
+              const cyclePath = [...current.path.slice(cycleStart), relation.child];
+              const description = cyclePath.join(' → ');
+              // 중복 제거
+              if (!circularReferences.some(ref => ref.description === description)) {
+                circularReferences.push({ path: cyclePath, description });
+              }
             }
           }
 
           // Find parent tables (tables that the current table references)
-          const parentQuery = `
-            SELECT 
-              TABLE_NAME as child_table,
-              COLUMN_NAME as fk_column,
-              REFERENCED_TABLE_NAME as parent_table
-            FROM information_schema.KEY_COLUMN_USAGE
-            WHERE TABLE_SCHEMA = ?
-              AND TABLE_NAME = ?
-              AND REFERENCED_TABLE_NAME IS NOT NULL
-          `;
+          const parentRelations = childToParents.get(current.tableName) || [];
           
-          const { rows: parentRows } = await executeQuery(
-            pool,
-            parentQuery,
-            [dbName, current.tableName]
-          );
-
-          for (const row of parentRows as any[]) {
+          for (const relation of parentRelations) {
             // Only add if not already in results (avoid duplicates)
             const exists = results.some(r => 
-              r.child_table === row.child_table && 
-              r.parent_table === row.parent_table &&
-              r.fk_column === row.fk_column
+              r.child_table === relation.child && 
+              r.parent_table === relation.parent &&
+              r.fk_column === relation.fk_column
             );
             
             if (!exists) {
               results.push({
                 depth: current.depth + 1,
-                child_table: row.child_table,
-                fk_column: row.fk_column,
-                parent_table: row.parent_table,
+                child_table: relation.child,
+                fk_column: relation.fk_column,
+                parent_table: relation.parent,
                 match_type: 'fk_constraint'
               });
             }
 
-            if (!visited.has(row.parent_table)) {
-              visited.add(row.parent_table);
-              queue.push({ tableName: row.parent_table, depth: current.depth + 1 });
+            if (!visited.has(relation.parent)) {
+              visited.add(relation.parent);
+              queue.push({ 
+                tableName: relation.parent, 
+                depth: current.depth + 1,
+                path: [...current.path, relation.parent]
+              });
+            } else if (current.path.includes(relation.parent)) {
+              // 순환 참조 감지
+              const cycleStart = current.path.indexOf(relation.parent);
+              const cyclePath = [...current.path.slice(cycleStart), relation.parent];
+              const description = cyclePath.join(' → ');
+              // 중복 제거
+              if (!circularReferences.some(ref => ref.description === description)) {
+                circularReferences.push({ path: cyclePath, description });
+              }
             }
           }
         }
@@ -556,6 +600,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           fk_relations_count: results.length,
           pattern_match_count: patternMatchResults.length,
           total_relations: results.length + patternMatchResults.length,
+          circular_references_detected: circularReferences.length > 0,
+          circular_references: circularReferences.length > 0 ? circularReferences : undefined,
           fk_relations: results,
           pattern_match_relations: includePatternMatch ? patternMatchResults : undefined,
           note: includePatternMatch 
@@ -565,6 +611,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         if (warning) {
           response.warning = warning;
+        }
+        
+        if (circularReferences.length > 0) {
+          response.circular_reference_note = `⚠️ 순환참조가 감지되었습니다 (${circularReferences.length}개). 이미 방문한 테이블은 재탐색하지 않았습니다.`;
         }
 
         return {

@@ -378,6 +378,7 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
   "fk_relations_count": 55,
   "pattern_match_count": 0,
   "total_relations": 55,
+  "circular_references_detected": false,
   "fk_relations": [
     {
       "depth": 1,
@@ -391,6 +392,26 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
   "note": "FK 제약조건 기반으로 조회되었습니다. 패턴 매칭도 포함하려면 '패턴 매칭도 포함해줘'라고 요청해보세요."
 }
 ```
+
+**순환참조 감지 예시**:
+```json
+{
+  "root_table": "user",
+  "circular_references_detected": true,
+  "circular_references": [
+    {
+      "path": ["user", "profile", "user"],
+      "description": "user → profile → user"
+    }
+  ],
+  "circular_reference_note": "⚠️ 순환참조가 감지되었습니다 (1개). 이미 방문한 테이블은 재탐색하지 않았습니다."
+}
+```
+
+**성능 최적화**:
+- v0.9.4부터 전체 FK 관계를 한 번에 로드하여 메모리에서 BFS 수행
+- 쿼리 횟수: O(n) → O(1) (n = 탐색할 테이블 수)
+- 대규모 데이터베이스에서도 빠른 응답 보장
 
 > **참고**: 응답은 JSON 배열 형태로 제공됩니다. 테이블이나 CSV 형식이 필요한 경우 LLM에게 변환을 요청하세요.
 ```
@@ -787,6 +808,9 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx @cano721/mysql-mcp-s
 
 | 버전 | 날짜 | 주요 변경 사항 |
 |------|------|---------------|
+| 0.9.4 | 2025-01-09 | `get_related_tables` 성능 최적화 (O(n) → O(1) 쿼리, 타임아웃 해결) |
+| 0.9.3 | 2025-01-09 | 모든 도구 description에 한글 키워드 추가 (한글 질문 인식 개선) |
+| 0.9.2 | 2025-01-09 | `get_related_tables` 응답에서 `constraint_name` 필드 제거 |
 | 0.9.1 | 2025-01-09 | `get_related_tables` 응답 크기 최적화 (포맷 변환은 LLM이 수행) |
 | 0.9.0 | 2025-01-09 | `get_related_tables` 응답 구조 개선 및 최적화 |
 | 0.8.0 | 2025-01-09 | `get_related_tables`에 패턴 매칭 옵션 추가, depth 제한 제거 |

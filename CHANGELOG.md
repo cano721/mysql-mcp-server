@@ -2,6 +2,25 @@
 
 모든 주요 변경 사항이 이 파일에 기록됩니다.
 
+## [0.9.4] - 2025-01-09
+
+### Changed
+- `get_related_tables` 성능 최적화: 모든 FK 관계를 한 번에 로드하여 메모리에서 BFS 수행
+- 쿼리 횟수를 O(n)에서 O(1)로 개선 (n = 탐색할 테이블 수)
+- 대규모 데이터베이스에서 타임아웃 문제 해결
+
+## [0.9.3] - 2025-01-09
+
+### Added
+- 모든 도구 description에 한글 키워드 추가 (한글 질문 인식 개선)
+  - list_databases: 데이터베이스 목록, DB 목록, 데이터베이스 조회
+  - list_tables: 테이블 목록, 테이블 조회, 테이블 리스트
+  - describe_table: 테이블 스키마, 테이블 구조, 컬럼 정보, 테이블 설명
+  - execute_query: 쿼리 실행, SQL 실행, 조회 쿼리
+  - get_related_tables: 연관 테이블, 관련 테이블, 연결된 테이블, 테이블 관계, 참조 테이블, FK 관계
+  - explain_query: 쿼리 실행 계획, 쿼리 분석, EXPLAIN
+  - analyze_query: 쿼리 성능 분석, 쿼리 통계, ANALYZE
+
 ## [0.9.2] - 2025-01-09
 
 ### Changed

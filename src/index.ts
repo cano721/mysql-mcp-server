@@ -26,20 +26,31 @@ import { validateQuery } from './validators.js';
 
 // Create MySQL connection pool
 let pool: mysql.Pool;
+let config: any;
 
 try {
-  const config = getConfigFromEnv();
+  config = getConfigFromEnv();
   console.error('[Setup] MySQL configuration:', { 
     host: config.host, 
     port: config.port, 
     user: config.user, 
     password: config.password ? '********' : '(not provided)',
-    database: config.database || '(default not set)' 
+    database: config.database || '(default not set)',
+    queryTimeout: config.queryTimeout || 60000
   });
   pool = createConnectionPool(config);
 } catch (error) {
   console.error('[Fatal] Failed to initialize MySQL connection:', error);
   process.exit(1);
+}
+
+// Wrapper function to include queryTimeout
+async function executeQueryWithTimeout(
+  sql: string,
+  params: any[] = [],
+  database?: string
+) {
+  return executeQuery(pool, sql, params, database, config.queryTimeout);
 }
 
 /**
@@ -227,8 +238,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "list_databases": {
         console.error('[Tool] Executing list_databases');
         
-        const { rows } = await executeQuery(
-          pool,
+        const { rows } = await executeQueryWithTimeout(
           'SHOW DATABASES'
         );
         
@@ -245,8 +255,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         
         const database = request.params.arguments?.database as string | undefined;
         
-        const { rows } = await executeQuery(
-          pool,
+        const { rows } = await executeQueryWithTimeout(
           'SHOW FULL TABLES',
           [],
           database
@@ -270,8 +279,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           throw new McpError(ErrorCode.InvalidParams, "Table name is required");
         }
         
-        const { rows } = await executeQuery(
-          pool,
+        const { rows } = await executeQueryWithTimeout(
           `DESCRIBE \`${table}\``,
           [],
           database
@@ -298,8 +306,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // Validate that the query is read-only
         validateQuery(query);
         
-        const { rows } = await executeQuery(
-          pool,
+        const { rows } = await executeQueryWithTimeout(
           query,
           [],
           database
@@ -331,8 +338,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
         explainQuery += ` ${query}`;
         
-        const { rows } = await executeQuery(
-          pool,
+        const { rows } = await executeQueryWithTimeout(
           explainQuery,
           [],
           database
@@ -359,8 +365,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // Build ANALYZE query
         const analyzeQuery = `ANALYZE ${query}`;
         
-        const { rows } = await executeQuery(
-          pool,
+        const { rows } = await executeQueryWithTimeout(
           analyzeQuery,
           [],
           database
@@ -396,7 +401,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // Get the actual database name
         let dbName = database;
         if (!dbName) {
-          const { rows: dbRows } = await executeQuery(pool, 'SELECT DATABASE() as db');
+          const { rows: dbRows } = await executeQueryWithTimeout('SELECT DATABASE() as db');
           dbName = (dbRows as any[])[0]?.db;
           if (!dbName) {
             throw new McpError(ErrorCode.InvalidParams, "Database name is required (no default database set)");
@@ -428,7 +433,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             AND REFERENCED_TABLE_NAME IS NOT NULL
         `;
         
-        const { rows: allFKRows } = await executeQuery(pool, allFKQuery, [dbName]);
+        const { rows: allFKRows } = await executeQueryWithTimeout(allFKQuery, [dbName]);
         
         // FK 관계를 Map으로 구성 (빠른 조회를 위해)
         const childToParents = new Map<string, Array<{child: string, fk_column: string, parent: string}>>();
@@ -569,8 +574,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               AND (${patterns.map(() => 'LOWER(c.COLUMN_NAME) = LOWER(?)').join(' OR ')})
           `;
           
-          const { rows: patternRows } = await executeQuery(
-            pool,
+          const { rows: patternRows } = await executeQueryWithTimeout(
             patternQuery,
             [dbName, table, ...patterns]
           );

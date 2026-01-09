@@ -116,6 +116,7 @@ npx -y @smithery/cli install @cano721/mysql-mcp-server --client claude
 - `MYSQL_PORT`: 데이터베이스 서버 포트 (기본값: 3306)
 - `MYSQL_PASSWORD`: 데이터베이스 비밀번호 (보안 연결에 권장)
 - `MYSQL_DATABASE`: 기본 데이터베이스명
+- `MYSQL_QUERY_TIMEOUT`: 쿼리 타임아웃 (밀리초, 기본값: 60000 = 60초)
 
 **보안 설정:**
 - `MYSQL_ALLOW_EXPLAIN`: EXPLAIN 쿼리 허용 여부 (기본값: true, 비활성화: false)
@@ -446,6 +447,7 @@ MySQL 연결 풀 동작을 더 세밀하게 제어하려면 추가 매개변수�
         "MYSQL_DATABASE": "your-default-database",
         
         "MYSQL_CONNECTION_LIMIT": "1",
+        "MYSQL_QUERY_TIMEOUT": "60000",
         "MYSQL_QUEUE_LIMIT": "0",
         "MYSQL_CONNECT_TIMEOUT": "10000",
         "MYSQL_IDLE_TIMEOUT": "60000",
@@ -465,6 +467,7 @@ MySQL 연결 풀 동작을 더 세밀하게 제어하려면 추가 매개변수�
 - `MYSQL_CONNECTION_LIMIT`: 풀의 최대 연결 수 제어 (기본값: 1)
 - `MYSQL_QUEUE_LIMIT`: 대기열에 넣을 최대 연결 요청 수 설정 (기본값: 0, 무제한)
 - `MYSQL_CONNECT_TIMEOUT`: 연결 타임아웃을 밀리초 단위로 조정 (기본값: 10000)
+- `MYSQL_QUERY_TIMEOUT`: 쿼리 타임아웃을 밀리초 단위로 조정 (기본값: 60000 = 60초)
 - `MYSQL_IDLE_TIMEOUT`: 연결이 해제되기 전까지 유휴 상태로 있을 수 있는 시간 (밀리초 단위)
 - `MYSQL_MAX_IDLE`: 풀에 유지할 최대 유휴 연결 수 설정
 - `MYSQL_ALLOW_EXPLAIN`: EXPLAIN 쿼리 허용 여부 (기본값: true)
@@ -808,6 +811,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | npx @cano721/mysql-mcp-s
 
 | 버전 | 날짜 | 주요 변경 사항 |
 |------|------|---------------|
+| 0.9.5 | 2025-01-09 | 쿼리 타임아웃 설정 가능 (`MYSQL_QUERY_TIMEOUT`, 기본값 60초) |
 | 0.9.4 | 2025-01-09 | `get_related_tables` 성능 최적화 (O(n) → O(1) 쿼리, 타임아웃 해결) |
 | 0.9.3 | 2025-01-09 | 모든 도구 description에 한글 키워드 추가 (한글 질문 인식 개선) |
 | 0.9.2 | 2025-01-09 | `get_related_tables` 응답에서 `constraint_name` 필드 제거 |

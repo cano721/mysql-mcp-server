@@ -16,6 +16,9 @@ export interface MySQLConfig {
   connectTimeout?: number;
   idleTimeout?: number;
   maxIdle?: number;
+  
+  // Query options
+  queryTimeout?: number;
 }
 
 // Database information

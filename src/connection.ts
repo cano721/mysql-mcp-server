@@ -8,6 +8,7 @@ import { MySQLConfig } from './types.js';
 // Default connection pool configuration
 const DEFAULT_PORT = 3306;           // Default MySQL port
 const DEFAULT_TIMEOUT = 10000;       // Default connection timeout in milliseconds
+const DEFAULT_QUERY_TIMEOUT = 60000; // Default query timeout in milliseconds (60 seconds)
 const DEFAULT_CONNECTION_LIMIT = 1;  // Default maximum number of connections in the pool
 const DEFAULT_QUEUE_LIMIT = 0;       // Default maximum number of connection requests to queue (0 = unlimited)
 const DEFAULT_ROW_LIMIT = 1000;      // Default row limit for query results
@@ -64,11 +65,15 @@ export async function executeQuery(
   pool: mysql.Pool,
   sql: string,
   params: any[] = [],
-  database?: string
+  database?: string,
+  queryTimeout?: number
 ): Promise<{ rows: any; fields: mysql.FieldPacket[] }> {
   console.error(`[Query] Executing: ${sql}`);
   
   let connection: mysql.PoolConnection | null = null;
+  
+  // Use provided timeout or default
+  const timeout = queryTimeout ?? DEFAULT_QUERY_TIMEOUT;
   
   try {
     // Get connection from pool
@@ -84,7 +89,7 @@ export async function executeQuery(
     const [rows, fields] = await Promise.race([
       connection.query(sql, params),
       new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Query timeout')), DEFAULT_TIMEOUT);
+        setTimeout(() => reject(new Error(`Query timeout after ${timeout}ms`)), timeout);
       }),
     ]);
     
@@ -125,6 +130,9 @@ export function getConfigFromEnv(): MySQLConfig {
   const idleTimeoutStr = process.env.MYSQL_IDLE_TIMEOUT;
   const maxIdleStr = process.env.MYSQL_MAX_IDLE;
   
+  // Query timeout option
+  const queryTimeoutStr = process.env.MYSQL_QUERY_TIMEOUT;
+  
   // Security options
   const allowExplain = process.env.MYSQL_ALLOW_EXPLAIN !== 'false'; // Default: true
   const allowAnalyze = process.env.MYSQL_ALLOW_ANALYZE !== 'false';  // Default: true
@@ -140,11 +148,14 @@ export function getConfigFromEnv(): MySQLConfig {
   const connectTimeout = connectTimeoutStr ? parseInt(connectTimeoutStr, 10) : undefined;
   const idleTimeout = idleTimeoutStr ? parseInt(idleTimeoutStr, 10) : undefined;
   const maxIdle = maxIdleStr ? parseInt(maxIdleStr, 10) : undefined;
+  const queryTimeout = queryTimeoutStr ? parseInt(queryTimeoutStr, 10) : DEFAULT_QUERY_TIMEOUT;
   
   console.error('[Setup] Security settings:', { 
     allowExplain,
     allowAnalyze
   });
+  
+  console.error('[Setup] Query timeout:', queryTimeout, 'ms');
   
   return { 
     host, 
@@ -156,6 +167,7 @@ export function getConfigFromEnv(): MySQLConfig {
     queueLimit,
     connectTimeout,
     idleTimeout,
-    maxIdle
+    maxIdle,
+    queryTimeout
   };
 }

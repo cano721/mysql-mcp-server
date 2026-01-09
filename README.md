@@ -24,7 +24,7 @@
 ## 보안 기능
 
 - **읽기 전용 접근**: SELECT, SHOW, DESCRIBE 문 항상 허용
-- **분석 도구**: EXPLAIN, ANALYZE 기본 허용 (읽기 전용 분석)
+- **분석 도구**: EXPLAIN, EXPLAIN ANALYZE 기본 허용 (읽기 전용 분석)
 - **쿼리 검증**: SQL 인젝션 방지 및 데이터 수정 시도 차단
 - **쿼리 타임아웃**: 장시간 실행되는 쿼리로부터 리소스 보호
 - **행 제한**: 과도한 데이터 반환 방지 (최대 1000행)
@@ -34,8 +34,8 @@
 - `SELECT` - 데이터 조회 및 분석 (항상 허용)
 - `SHOW` - 데이터베이스/테이블/인덱스 정보 조회 (항상 허용)
 - `DESCRIBE` / `DESC` - 테이블 구조 및 컬럼 정보 (항상 허용)
-- `EXPLAIN` - 쿼리 실행 계획 및 성능 분석 (기본 허용, 읽기 전용)
-- `ANALYZE` - 테이블 통계 분석 (기본 허용, 읽기 전용)
+- `EXPLAIN` - 쿼리 실행 계획 분석 (기본 허용, 읽기 전용)
+- `EXPLAIN ANALYZE` - 쿼리 실제 실행 및 성능 분석 (기본 허용, 읽기 전용)
 
 ## 요구사항
 
@@ -281,18 +281,6 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 }
 ```
 
-**ANALYZE 사용 예제**:
-```json
-{
-  "server_name": "mysql",
-  "tool_name": "execute_query",
-  "arguments": {
-    "database": "my_database",
-    "query": "ANALYZE TABLE my_table"
-  }
-}
-```
-
 ### explain_query
 
 쿼리 실행 계획을 분석합니다 (MYSQL_ALLOW_EXPLAIN=true 필요).
@@ -317,11 +305,15 @@ MySQL 서버에서 접근 가능한 모든 데이터베이스를 나열합니다
 
 ### analyze_query
 
-쿼리 성능 및 통계를 분석합니다 (MYSQL_ALLOW_ANALYZE=true 필요).
+쿼리를 실제로 실행하면서 성능 통계를 분석합니다 (MYSQL_ALLOW_ANALYZE=true 필요).
+
+`EXPLAIN ANALYZE` 구문을 사용하여 쿼리를 실제로 실행하고, 각 단계별 실행 시간과 행 수 등의 상세한 성능 정보를 제공합니다.
 
 **매개변수**:
-- `query` (필수): 분석할 SQL 쿼리
+- `query` (필수): 분석할 SQL 쿼리 (SELECT 문)
 - `database` (선택사항): 데이터베이스명
+
+**주의**: 이 도구는 쿼리를 실제로 실행하므로, 대용량 데이터 조회 시 시간이 오래 걸릴 수 있습니다.
 
 **예제**:
 ```json
